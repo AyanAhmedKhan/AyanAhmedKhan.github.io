@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theory | Virtual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theory.css"> <!-- Link to your external stylesheet -->
+</head>
+<body>
+    <!-- Navbar Section -->
+    <nav>
+        <ul>
+            <li><a href="index.html">Experiment</a></li>
+            <li><a href="aim.html">Aim</a></li>
+            <li><a href="theory.html" class="active">Theory</a></li>
+            <li><a href="procedure.html">Procedure</a></li>
+            <li><a href="about.html">About</a></li>
+
+        </ul>
+    </nav>
+
+    <!-- Theory Page Content -->
+    <div class="theory-container">
+        <h1>Theory: Ohm's Law</h1>
+
+        <h2>Ohm's Law</h2>
+        <p>
+            Ohm's law states that the current through a conductor between two points is directly proportional to the voltage across the two points. Such a conductor is characterized by its ‘Resistance’ (R), measured in Ohms.
+        </p>
+        <p>
+            The relationship can be written as: <strong>V = I × R</strong>, where:
+        </p>
+        <ul>
+            <li><strong>V</strong> is the voltage across the conductor (in Volts).</li>
+            <li><strong>I</strong> is the current through the conductor (in Amperes).</li>
+            <li><strong>R</strong> is the resistance of the conductor (in Ohms).</li>
+        </ul>
+        <p>
+            Voltage (V) is directly proportional to current (I), i.e. <strong>V = I × R</strong>.
+            Resistance (R) is inversely proportional to current (I), i.e. <strong>R = V / I</strong>.
+        </p>
+
+        <!-- Ohm's Law Triangle -->
+        <figure>
+            <img src="https://be-iitkgp.vlabs.ac.in/exp/ohm-law/images/ohmtr.png" alt="Ohm's Law Triangle">
+            <figcaption>Figure 1: Ohm's Law Triangle</figcaption>
+        </figure>
+
+        <p><strong>Note:</strong> From the above figure, the equation can be represented by a triangle where:
+            <ul>
+                <li><strong>V (voltage)</strong> is at the top.</li>
+                <li><strong>I (current)</strong> is placed on the left.</li>
+                <li><strong>R (resistance)</strong> is placed on the right.</li>
+            </ul>
+            The divider between the left and right sections indicates multiplication, while the divider between the top and bottom sections indicates division.
+        </p>
+
+        <h2>Explanation of Ohm's Law</h2>
+        <figure>
+            <img src="https://be-iitkgp.vlabs.ac.in/exp/ohm-law/images/ohmt2.png" alt="Current through Resistor">
+            <figcaption>Figure 2: Current through resistor</figcaption>
+        </figure>
+        <p>
+            From the circuit above, the voltage across the resistor is equal to the source voltage. The current through the resistance can be calculated using Ohm's Law: <strong>I = V / R</strong>.
+        </p>
+
+        <h2>Explanation of Ohm's Law for Resistance in Series</h2>
+        <p>Series circuits are sometimes called current-coupled or daisy chain-coupled. The current in a series circuit flows through every component in the circuit. All components in a series connection carry the same current.</p>
+        <figure>
+            <img src="https://be-iitkgp.vlabs.ac.in/exp/ohm-law/images/ohmt3.png" alt="Series Resistor">
+            <figcaption>Figure 3: Series Resistor</figcaption>
+        </figure>
+        <p>In a series circuit:</p>
+        <ul>
+            <li>The current through each resistor is the same.</li>
+            <li>The total voltage is the sum of the voltages across each resistor.</li>
+        </ul>
+        <p>
+            The equivalent resistance of the series circuit is given by the sum of individual resistances:
+            <strong>R<sub>total</sub> = R<sub>1</sub> + R<sub>2</sub> + ...</strong>
+        </p>
+
+        <h2>Explanation of Ohm's Law for Resistance in Parallel</h2>
+        <p>In a parallel circuit, components have the same potential difference (voltage) across them. The total current is the sum of the currents through the individual components, as per Kirchhoff's Current Law.</p>
+        <figure>
+            <img src="https://be-iitkgp.vlabs.ac.in/exp/ohm-law/images/ohmt4.png" alt="Parallel Resistor">
+            <figcaption>Figure 4: Parallel Resistor</figcaption>
+        </figure>
+        <p>The total current is the sum of the individual currents through each resistor, and the equivalent resistance is given by:</p>
+        <strong>1 / R<sub>total</sub> = 1 / R<sub>1</sub> + 1 / R<sub>2</sub> + ...</strong>
+
+        <h2>Explanation of Non-Ohmic Devices</h2>
+        <p>A Non-Ohmic device is a device that does not obey Ohm's Law. The resistance is not constant, and it changes depending on the voltage across it. The V-I graph of such a device is not a straight line, but it has a curvy shape.</p>
+        <figure>
+            <img src="https://be-iitkgp.vlabs.ac.in/exp/ohm-law/images/ohmtnhm.png" alt="Non-Ohmic Device">
+            <figcaption>Figure 5: Non-Ohmic Device</figcaption>
+        </figure>
+        <p>Examples of Non-Ohmic devices include tungsten filaments (bulb), diodes, thermistors, etc.</p>
+
+        <h2>Note:</h2>
+        <p>
+            Ohm's Law is a useful law but only applies to devices that behave like resistors—i.e., where current (I) is simply proportional to voltage (V). There are other relationships between voltage and current, such as for capacitors, diodes, and thermistors.
+        </p>
+    </div>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2024 Virtual Lab Project | MITS Gwalior</p>
+    </footer>
+
+    <script src="scripts.js"></script> <!-- Link to your JavaScript file -->
+</body>
+</html>

@@ -1,0 +1,277 @@
+body {
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.5;
+    color: #333;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #F3F3E0; /* Light background color */
+}
+
+.card-content {
+    padding: 13px;
+}
+/* Styling for the linkin container */
+.linkin {
+    display: flex;
+    justify-content: center; /* Centers the links horizontally */
+    gap: 30px; /* Adds space between each link */
+    margin-top: 20px; /* Adds some space above the links */
+    font-family: 'Poppins', sans-serif; /* Poppins font for a modern look */
+}
+
+.linkin a {
+    text-decoration: none; /* Removes the default underline from the links */
+    font-size: 1.2rem; /* Slightly larger font size for readability */
+    font-weight: 600; /* Bold font weight for prominence */
+    color: white ; /* Dark blue for the link text */
+    text-decoration: underline; /* Underline the link on hover */
+    transition: color 0.3s, transform 0.3s ease; /* Smooth transition for hover effects */
+}
+
+.linkin a:hover {
+    color: #CBDCEB; /* Lighter blue color when hovering */
+    transform: translateY(-3px); /* Adds a slight lift effect when hovering */
+}
+
+/* Optional: Add a hover effect for the entire container (just for extra flair) */
+.linkin a:active {
+    color: #CBDCEB; /* Change color when link is clicked */
+}
+
+.input-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.input-field {
+    flex: 1;
+    min-width: 200px;
+    padding: 12px;
+    font-size: 1rem;
+    border: 1px solid #CBDCEB; /* Subtle light blue border */
+    border-radius: 10px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-field:focus {
+    border-color: #133E87; /* Dark blue focus color */
+    box-shadow: 0 0 8px rgba(19, 62, 135, 0.5);
+    outline: none;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #133E87; /* Dark blue label color */
+}
+
+input[type="number"],
+input[type="range"] {
+    width: 100%;
+    padding: 8px 1px;
+    border: 1px solid #CBDCEB;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+button {
+    background-color: #133E87; /* Dark blue background */
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif; /* Apply Poppins to buttons */
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #608BC1; /* Hover light blue */
+}
+
+button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.remove-btn {
+    background-color: #DC3545;
+    padding: 5px 10px;
+    font-size: 0.875rem;
+}
+
+.remove-btn:hover {
+    background-color: #C82333;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Poppins', sans-serif; /* Apply Poppins to tables */
+}
+
+th,
+td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #CBDCEB;
+}
+
+th {
+    background-color: #608BC1; /* Header light blue */
+    color: #fff;
+    font-weight: 600;
+}
+#voltageCurrentChart {
+    width: 100%;
+    height: 50px;
+}
+
+#resistanceSlider,
+#voltageSlider {
+    margin: 10px;
+    padding: 10px;
+    width: 90%;
+}
+
+.gauge-container {
+    width: 111px;
+    position: relative;
+    bottom: 318px;
+    left: 143px;
+    background-color: #ffff;
+
+}
+
+.gauge {
+
+    height: 70px;
+}
+
+.needle {
+    transform-origin: 100px 100px;
+    transition: transform 0.5s ease-out;
+}
+
+.value-display {
+    position: absolute;
+    top: 85%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.label {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 5px 15px;
+    font-size: 14px;
+}
+
+.resistanceInputDisplay {
+    position: relative;
+    bottom: 288px;
+    left: 127px;
+}
+
+.volatgeInputDisplay {
+    position: relative;
+    bottom: 244px;
+    left: 87px;
+}
+
+.current-gauge-container {
+    width: 119px;
+    position: relative;
+    bottom: 283px;
+    left: 15px;
+    background-color: #ffff;
+}
+
+.current-gauge {
+    /* width: 98%; */
+    height: 70px;
+}
+.card-header {
+    background-color: #608BC1; /* Light blue header */
+    border-bottom: 2px solid #133E87; /* Dark blue accent */
+    padding: 20px;
+    border-radius: 8px 8px 0 0;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    color: #fff; /* White text */
+}
+
+.card-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin: 0;
+    font-family: 'Poppins', sans-serif; /* Apply Poppins to titles */
+}
+
+.card-description {
+    font-size: 1rem;
+    margin-top: 8px;
+    line-height: 1.5;
+}
+
+.card {
+    background-color: #FFF; /* White background for cards */
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
+    margin-bottom: 24px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.footer {
+    background-color: #133E87; /* Dark blue footer */
+    color: #fff;
+    text-align: center;
+    padding: 20px 10px;
+    margin-top: 30px;
+    font-size: 0.9rem;
+    border-top: 3px solid #608BC1;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    font-family: 'Poppins', sans-serif; /* Apply Poppins to footer */
+}
+
+.footer p {
+    margin: 0;
+    font-weight: 500;
+}
+
+.footer-links {
+    margin-top: 10px;
+}
+
+.footer-links a {
+    color: #fff;
+    margin: 0 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: #F3F3E0; /* Background light color */
+}

@@ -1,0 +1,100 @@
+/* General Page Styles */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #F3F3E0; /* Light background color */
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+#about {
+    padding: 20px;
+    background-color: #CBDCEB; /* Soft blue background */
+}
+
+
+.card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 0 auto;
+    padding: 20px;
+    max-width: 800px;
+}
+
+.card-header {
+    background-color: #133E87; /* Dark blue for header */
+    color: #fff;
+    text-align: center;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.card-header h2 {
+    font-size: 2rem;
+    margin: 0;
+}
+
+.card-header p {
+    font-size: 1.1rem;
+    margin-top: 5px;
+}
+
+.card-content {
+    padding: 15px;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: #608BC1; /* Soft blue for content */
+}
+
+.card-content h3 {
+    font-size: 1.5rem;
+    color: #133E87; /* Dark blue for sub-headings */
+    margin-top: 20px;
+}
+
+.card-content p {
+    margin-top: 10px;
+}
+
+.footer {
+    background-color: #133E87; /* Dark blue for footer */
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
+
+.footer p {
+    margin: 0;
+    font-weight: 500;
+}
+.creator-info {
+    background-color: #608BC1; /* Light blue background */
+    padding: 30px; /* Space inside the box */
+    color: white; /* Text color */
+    font-size: 1.2rem; /* Text size */
+    margin-top: 40px; /* Space between sections */
+    border-radius: 10px; /* Rounded corners */
+    text-align: center; /* Center-align text */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow effect */
+}
+
+.creator-info h3 {
+    font-size: 1.5rem; /* Heading size */
+    margin-bottom: 15px; /* Space below the heading */
+}
+
+.creator-info p {
+    margin: 12px 0; /* Space between paragraphs */
+}
+
+.creator-info p strong {
+    font-weight: bold; /* Make labels bold */
+}
+
+.creator-info p:last-child {
+    font-style: italic; /* Italicize the last paragraph for emphasis */
+}
