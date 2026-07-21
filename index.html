@@ -1,325 +1,1194 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ohm's Law Virtual Lab</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="style.css">
-    
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ayan Ahmed Khan — Trustworthy Machine Learning</title>
+<meta name="description" content="Ayan Ahmed Khan — research portfolio. Evaluation machinery for trustworthy machine learning, tested across clinical data, medical imaging, multilingual NLP, network security and forecasting.">
+<meta name="author" content="Ayan Ahmed Khan">
+<!-- tells the UA to render native controls and scrollbars for both themes -->
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F3F6F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A0F11" media="(prefers-color-scheme: dark)">
+<link rel="canonical" href="https://ayanahmedkhan.github.io/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%89%3C/text%3E%3C/svg%3E">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Ayan Ahmed Khan — Trustworthy Machine Learning">
+<meta property="og:description" content="Ayan Ahmed Khan — research portfolio. Evaluation machinery for trustworthy machine learning, tested across clinical data, medical imaging, multilingual NLP, network security and forecasting.">
+<meta property="og:url" content="https://ayanahmedkhan.github.io/">
+<meta name="twitter:card" content="summary">
+
+<style>
+  /* ============================================================
+     TOKENS
+     teal  = the ideal (perfect calibration, the diagonal)
+     amber = the deviation (what the model actually does)
+     Light mode gets real elevation; dark mode uses hairlines instead,
+     because shadows read as grey smudge on a dark ground.
+     ============================================================ */
+  :root {
+    --paper:  #F3F6F5;
+    --raised: #FCFDFD;
+    --sunk:   #EAEEED;
+    --ink:    #101619;
+    --muted:  #59696B;
+    --rule:   #CFD8D6;
+    --teal:   #0B6A71;
+    --amber:  #A2621A;
+    --shade:  rgba(162,98,26,.12);
+    --elev:   0 1px 2px rgba(16,22,25,.05), 0 10px 26px -16px rgba(16,22,25,.22);
+    --elev-h: 0 1px 2px rgba(16,22,25,.06), 0 14px 30px -14px rgba(16,22,25,.26);
+
+    --serif: "Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans: system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --mono: ui-monospace,"SF Mono","Cascadia Mono","Roboto Mono",Menlo,Consolas,monospace;
+
+    --col: 66ch;
+    --pad: clamp(1.15rem, 4vw, 3rem);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:  #0A0F11;
+      --raised: #141C1E;
+      --sunk:   #070B0C;
+      --ink:    #E6EDEB;
+      --muted:  #8A9C9E;
+      --rule:   #243235;
+      --teal:   #4FB6BC;
+      --amber:  #E0A55C;
+      --shade:  rgba(224,165,92,.15);
+      --elev:   none;
+      --elev-h: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#0A0F11; --raised:#141C1E; --sunk:#070B0C; --ink:#E6EDEB; --muted:#8A9C9E;
+    --rule:#243235; --teal:#4FB6BC; --amber:#E0A55C; --shade:rgba(224,165,92,.15);
+    --elev:none; --elev-h:none;
+  }
+  :root[data-theme="light"] {
+    --paper:#F3F6F5; --raised:#FCFDFD; --sunk:#EAEEED; --ink:#101619; --muted:#59696B;
+    --rule:#CFD8D6; --teal:#0B6A71; --amber:#A2621A; --shade:rgba(162,98,26,.12);
+    --elev:0 1px 2px rgba(16,22,25,.05), 0 10px 26px -16px rgba(16,22,25,.22);
+    --elev-h:0 1px 2px rgba(16,22,25,.06), 0 14px 30px -14px rgba(16,22,25,.26);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: clamp(15.6px, .38vw + 14.4px, 17px);
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color .2s, color .2s;
+  }
+
+  a { color: inherit; }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 3px;
+    border-radius: 1px;
+  }
+
+  /* ---------- skip link ---------- */
+  .skip {
+    position: absolute; left: -9999px; top: 0; z-index: 60;
+    background: var(--teal); color: #fff; padding: .55rem .9rem;
+    font-family: var(--sans); font-size: .78rem; text-decoration: none;
+  }
+  .skip:focus { left: .5rem; top: .5rem; }
+
+  /* ---------- reading progress ---------- */
+  .progress {
+    position: fixed; top: 0; left: 0; height: 2px; width: 0;
+    background: var(--teal); z-index: 50;
+    transition: width .08s linear;
+  }
+
+  /* ---------- theme toggle ---------- */
+  .theme {
+    position: fixed; top: .85rem; right: .85rem; z-index: 55;
+    width: 2.1rem; height: 2.1rem; display: grid; place-items: center;
+    background: var(--raised); color: var(--muted);
+    border: 1px solid var(--rule); box-shadow: var(--elev);
+    cursor: pointer; padding: 0;
+    transition: color .16s, border-color .16s, box-shadow .16s;
+  }
+  .theme:hover { color: var(--teal); border-color: var(--teal); box-shadow: var(--elev-h); }
+  .theme svg { width: 15px; height: 15px; display: block; }
+  .theme .moon { display: none; }
+  :root[data-theme="dark"] .theme .moon { display: block; }
+  :root[data-theme="dark"] .theme .sun  { display: none; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) .theme .moon { display: block; }
+    :root:not([data-theme]) .theme .sun  { display: none; }
+  }
+
+  /* ---------- shell ---------- */
+  .shell {
+    display: grid;
+    grid-template-columns: minmax(190px, 236px) minmax(0, 1fr);
+    gap: clamp(2rem, 5vw, 4.5rem);
+    max-width: 1180px;
+    margin: 0 auto;
+    /* right padding always clears the fixed theme button */
+    padding: clamp(1.75rem, 4vw, 4rem) max(var(--pad), 3.4rem) 6rem var(--pad);
+    align-items: start;
+  }
+
+  /* ---------- left spine ---------- */
+  .spine { position: sticky; top: 2.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+  /* The image is a transparent cutout; the tile behind it carries the theme,
+     so it reads as light-on-light or dark-on-dark instead of a white box. */
+  .portrait {
+    width: 116px; aspect-ratio: 3/4; object-fit: cover;
+    border: 1px solid var(--rule);
+    box-shadow: var(--elev);
+    background:
+      radial-gradient(120% 90% at 50% 8%, var(--shade), transparent 58%),
+      var(--raised);
+    filter: saturate(.92);
+  }
+  .spine h1 {
+    font-size: 1.32rem; line-height: 1.22; margin: 0; font-weight: 600;
+    letter-spacing: -.012em; text-wrap: balance;
+  }
+  .spine .role { font-family: var(--sans); font-size: .74rem; color: var(--muted); margin: .4rem 0 0; letter-spacing: .01em; }
+
+  .eyebrow {
+    font-family: var(--sans); font-size: .655rem; font-weight: 600;
+    letter-spacing: .15em; text-transform: uppercase; color: var(--muted);
+  }
+
+  /* section nav, with active-section tracking */
+  nav.toc { display: flex; flex-direction: column; gap: .1rem; }
+  nav.toc a {
+    font-family: var(--sans); font-size: .785rem; text-decoration: none;
+    color: var(--muted); padding: .22rem 0 .22rem .7rem;
+    border-left: 2px solid transparent;
+    transition: color .16s, border-color .16s;
+  }
+  nav.toc a:hover { color: var(--teal); }
+  nav.toc a.active { color: var(--ink); border-left-color: var(--teal); font-weight: 600; }
+
+  .links { display: flex; flex-direction: column; gap: .34rem; }
+  .links a {
+    font-family: var(--mono); font-size: .735rem; color: var(--muted);
+    text-decoration: none; overflow-wrap: anywhere; transition: color .15s;
+  }
+  .links a:hover { color: var(--teal); text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ---------- main column ---------- */
+  main { min-width: 0; max-width: var(--col); }
+  section { margin-bottom: 3.6rem; scroll-margin-top: 1.5rem; }
+
+  h2 {
+    font-family: var(--sans); font-size: .68rem; font-weight: 700;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--muted);
+    margin: 0 0 1.15rem; padding-bottom: .5rem; border-bottom: 1px solid var(--rule);
+  }
+  h3 { font-size: 1.03rem; font-weight: 600; margin: 0; letter-spacing: -.008em; text-wrap: balance; }
+
+  p { margin: 0 0 .95rem; }
+  .lede { font-size: clamp(1.1rem, .5vw + 1rem, 1.24rem); line-height: 1.5; letter-spacing: -.011em; text-wrap: balance; }
+  .lede em { font-style: italic; color: var(--amber); }
+  .sub { color: var(--muted); font-size: .93rem; }
+
+  /* ---------- hero ---------- */
+  .hero { margin-bottom: 3.2rem; }
+  .figure-wrap {
+    margin: 1.9rem 0 0; padding: 1.15rem 1.15rem .8rem;
+    background: var(--raised); border: 1px solid var(--rule);
+    box-shadow: var(--elev);
+    overflow-x: auto;
+  }
+  canvas { display: block; width: 100%; height: auto; max-width: 420px; }
+  figcaption {
+    font-family: var(--sans); font-size: .715rem; color: var(--muted);
+    margin-top: .7rem; line-height: 1.5; max-width: 46ch;
+  }
+  .key { display: inline-flex; align-items: center; gap: .34rem; margin-right: .9rem; }
+  .key i { width: 15px; height: 0; border-top-width: 2px; display: inline-block; }
+  .key.ideal i { border-top-style: dashed; border-color: var(--muted); }
+  .key.obs i { border-top-style: solid; border-color: var(--amber); }
+
+  /* ---------- findings ---------- */
+  .finding {
+    display: grid; grid-template-columns: 8.6rem minmax(0,1fr);
+    gap: 1.35rem; padding: 1.05rem 0; border-top: 1px solid var(--rule);
+    align-items: baseline; position: relative;
+  }
+  .finding:last-of-type { border-bottom: 1px solid var(--rule); }
+  .stat {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 1.42rem; line-height: 1.15; color: var(--amber);
+    letter-spacing: -.03em; font-weight: 500;
+    transition: color .16s;
+  }
+  .stat small { display: block; font-size: .625rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted); margin-top: .3rem;
+    font-family: var(--sans); font-weight: 600; }
+  .finding p { margin: 0; font-size: .935rem; line-height: 1.55; }
+  .finding .where { color: var(--muted); font-size: .8rem; display: block; margin-top: .3rem; font-family: var(--sans); }
+
+  a.finding { text-decoration: none; color: inherit; }
+  a.finding::before {
+    content: ""; position: absolute; inset: 0 calc(var(--pad) * -.35); z-index: -1;
+    background: transparent; transition: background-color .16s;
+  }
+  a.finding:hover::before { background: var(--raised); }
+  a.finding:hover .stat { color: var(--teal); }
+
+  /* ---------- publications ---------- */
+  .pubgroup { margin-bottom: 1.6rem; }
+  .pubgroup .eyebrow { display: block; margin-bottom: .7rem; }
+  .pub {
+    display: grid; grid-template-columns: 2.9rem minmax(0,1fr);
+    gap: .8rem; padding: .68rem 0; border-top: 1px solid var(--rule);
+    font-size: .885rem; line-height: 1.5;
+  }
+  .pub .tag { font-family: var(--mono); font-size: .715rem; color: var(--teal); padding-top: .18rem; }
+  .pub b { font-weight: 600; }
+  .pub .venue { color: var(--muted); font-style: italic; }
+  .badge {
+    font-family: var(--sans); font-size: .6rem; font-weight: 700; letter-spacing: .09em;
+    text-transform: uppercase; color: var(--teal); border: 1px solid var(--teal);
+    padding: .06rem .34rem; margin-left: .35rem; white-space: nowrap; vertical-align: .08em;
+  }
+
+  /* ---------- projects (clickable cards) ---------- */
+  .proj {
+    display: block; text-decoration: none; color: inherit;
+    padding: 1.05rem 0; border-top: 1px solid var(--rule);
+    position: relative; transition: transform .16s;
+  }
+  .proj:last-of-type { border-bottom: 1px solid var(--rule); }
+  .proj .meta {
+    font-family: var(--sans); font-size: .72rem; color: var(--muted);
+    margin: .3rem 0 .5rem; letter-spacing: .01em;
+  }
+  .proj p { margin: 0; font-size: .9rem; line-height: 1.56; }
+  .proj .nums { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--amber); font-size: .87rem; }
+  .proj h3 { transition: color .16s; }
+  .proj .more {
+    display: inline-block; margin-top: .55rem;
+    font-family: var(--sans); font-size: .715rem; letter-spacing: .04em;
+    color: var(--teal); opacity: .75; transition: opacity .16s, transform .16s;
+  }
+  /* bleed the hover tint past the text column so it reads as one row */
+  .proj::before {
+    content: ""; position: absolute; inset: 0 calc(var(--pad) * -.35); z-index: -1;
+    background: transparent; transition: background-color .16s;
+  }
+  .proj:hover::before { background: var(--raised); }
+  .proj:hover h3 { color: var(--teal); }
+  .proj:hover .more { opacity: 1; transform: translateX(3px); }
+
+  /* ---------- project detail view ---------- */
+  .back {
+    display: inline-block; margin-bottom: 1.6rem;
+    font-family: var(--sans); font-size: .74rem; letter-spacing: .04em;
+    color: var(--muted); text-decoration: none; transition: color .15s;
+  }
+  .back:hover { color: var(--teal); }
+
+  .detail h1 {
+    font-size: clamp(1.42rem, 1.4vw + 1.05rem, 1.72rem); line-height: 1.2;
+    margin: .2rem 0 .5rem; font-weight: 600; letter-spacing: -.016em; text-wrap: balance;
+  }
+  .detail h1:focus { outline: none; }
+  .detail-meta {
+    font-family: var(--sans); font-size: .765rem; color: var(--muted);
+    margin: 0 0 1.5rem; letter-spacing: .01em;
+  }
+  .status {
+    display: inline-block;
+    font-family: var(--sans); font-size: .6rem; font-weight: 700;
+    letter-spacing: .09em; text-transform: uppercase;
+    border: 1px solid currentColor; padding: .08rem .36rem;
+    margin-left: .5rem; white-space: nowrap; vertical-align: .1em;
+  }
+  .status.live { color: var(--amber); }
+  .status.done { color: var(--teal); }
+
+  .detail section { margin-bottom: 2.5rem; }
+  .detail p { font-size: .95rem; line-height: 1.62; }
+
+  /* results tiles */
+  .statgrid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    gap: 1px; background: var(--rule);
+    border: 1px solid var(--rule); margin: 0;
+    box-shadow: var(--elev);
+  }
+  .statgrid div { background: var(--raised); padding: .85rem .9rem; }
+  .statgrid dt {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 1.16rem; color: var(--amber); letter-spacing: -.025em; line-height: 1.2;
+  }
+  .statgrid dd {
+    margin: .35rem 0 0; font-family: var(--sans); font-size: .695rem;
+    color: var(--muted); line-height: 1.42;
+  }
+
+  /* best-practice principles */
+  ul.practices { list-style: none; margin: 0; padding: 0; }
+  ul.practices li {
+    position: relative; padding: .5rem 0 .5rem 1.6rem;
+    border-top: 1px solid var(--rule);
+    font-size: .92rem; line-height: 1.55;
+  }
+  ul.practices li:last-child { border-bottom: 1px solid var(--rule); }
+  ul.practices li::before {
+    content: "✓"; position: absolute; left: 0; top: .52rem;
+    color: var(--teal); font-size: .82rem; font-family: var(--sans);
+  }
+  ul.practices b { font-weight: 600; }
+
+  /* prev / next between project pages */
+  .projnav {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+    background: var(--rule); border: 1px solid var(--rule);
+    margin: 2.5rem 0 1.5rem;
+  }
+  .projnav a {
+    background: var(--raised); padding: .85rem 1rem; text-decoration: none;
+    display: flex; flex-direction: column; gap: .25rem;
+    transition: background-color .16s;
+  }
+  .projnav a:hover { background: var(--sunk); }
+  .projnav a:hover .pn-t { color: var(--teal); }
+  .projnav .pn-k {
+    font-family: var(--sans); font-size: .625rem; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  .projnav .pn-t { font-size: .88rem; line-height: 1.35; transition: color .16s; }
+  .projnav a.next { text-align: right; align-items: flex-end; }
+  .projnav a.ph { background: transparent; pointer-events: none; }
+
+  /* ---------- domain markers (breadth, made scannable) ---------- */
+  .domains { display: flex; flex-wrap: wrap; gap: .4rem; margin: 1.5rem 0 0; }
+  .domains span {
+    font-family: var(--sans); font-size: .655rem; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--muted);
+    border: 1px solid var(--rule); background: var(--raised);
+    padding: .24rem .55rem;
+  }
+  .domain {
+    display: inline-block; font-family: var(--sans); font-size: .6rem; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--teal);
+    border: 1px solid var(--rule); padding: .05rem .34rem; margin-right: .5rem;
+    vertical-align: .08em; white-space: nowrap;
+  }
+
+  /* ---------- lists ---------- */
+  ul.plain { list-style: none; margin: 0; padding: 0; }
+  ul.plain li {
+    padding: .5rem 0; border-top: 1px solid var(--rule);
+    font-size: .9rem; line-height: 1.55;
+  }
+  ul.plain li:last-child { border-bottom: 1px solid var(--rule); }
+  .year { font-family: var(--mono); font-size: .74rem; color: var(--muted); margin-right: .6rem; }
+
+  /* ---------- contact ---------- */
+  .contact-grid { display: flex; flex-wrap: wrap; gap: .55rem 1.4rem; margin-top: .3rem; }
+  .contact-grid a {
+    font-family: var(--mono); font-size: .82rem; color: var(--teal);
+    text-decoration: none; border-bottom: 1px solid transparent; transition: border-color .15s;
+  }
+  .contact-grid a:hover { border-bottom-color: var(--teal); }
+
+  footer {
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule);
+    font-family: var(--sans); font-size: .715rem; color: var(--muted);
+  }
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+
+  /* narrower desktop: tighten the spine before it starts crowding */
+  @media (max-width: 1040px) {
+    .shell { grid-template-columns: minmax(168px, 200px) minmax(0, 1fr); gap: 2.4rem; }
+    .portrait { width: 100px; }
+    .spine h1 { font-size: 1.2rem; }
+  }
+
+  /* tablet / phone: spine becomes a compact header, nav becomes chips */
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: 1fr; gap: 2rem; padding-top: 1.4rem; }
+    .spine {
+      position: static;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: .55rem 1.1rem;
+      align-items: center;
+      padding-bottom: 1.4rem;
+      border-bottom: 1px solid var(--rule);
+    }
+    .portrait { grid-row: 1 / span 2; width: 84px; align-self: start; }
+    .spine > div:first-of-type { grid-column: 2; align-self: end; padding-right: 2.2rem; }
+    .links { grid-column: 2; align-self: start; }
+    nav.toc {
+      grid-column: 1 / -1;
+      flex-direction: row; gap: .4rem;
+      overflow-x: auto; padding-bottom: .2rem;
+      scrollbar-width: none;
+    }
+    nav.toc::-webkit-scrollbar { display: none; }
+    nav.toc a {
+      border: 1px solid var(--rule); border-left-width: 1px;
+      padding: .3rem .65rem; white-space: nowrap; font-size: .745rem;
+      background: var(--raised);
+    }
+    nav.toc a.active {
+      border-color: var(--teal); color: var(--teal);
+      border-left-color: var(--teal);
+    }
+    main { max-width: none; }
+    section { margin-bottom: 2.8rem; }
+  }
+
+  /* phone */
+  @media (max-width: 600px) {
+    .finding { grid-template-columns: 1fr; gap: .3rem; padding: .9rem 0; }
+    .stat { font-size: 1.24rem; }
+    .stat small { display: inline; margin-left: .5rem; }
+    .pub { grid-template-columns: 2.4rem minmax(0,1fr); gap: .55rem; }
+    .statgrid { grid-template-columns: repeat(auto-fit, minmax(7.6rem, 1fr)); }
+    .projnav { grid-template-columns: 1fr; }
+    .projnav a.next { text-align: left; align-items: flex-start; }
+    .projnav a.ph { display: none; }
+    .figure-wrap { padding: .85rem .85rem .6rem; }
+    .theme { top: .6rem; right: .6rem; }
+    .spine { gap: .5rem .85rem; }
+    .portrait { width: 68px; }
+    .spine h1 { font-size: 1.12rem; }
+    .spine .role { font-size: .715rem; }
+  }
+
+  /* very small phones: let the header stack fully */
+  @media (max-width: 380px) {
+    .spine { grid-template-columns: 1fr; }
+    .portrait { grid-row: auto; }
+    .spine > div:first-of-type, .links { grid-column: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+
+  /* ---------- print ---------- */
+  @media print {
+    .theme, .progress, nav.toc, .skip, .projnav, .more { display: none !important; }
+    body { background: #fff; color: #000; font-size: 10.5pt; }
+    .shell { display: block; max-width: none; padding: 0; }
+    .spine { position: static; margin-bottom: 1.5rem; }
+    .figure-wrap, .statgrid, .portrait { box-shadow: none; }
+    a { text-decoration: none; }
+    section { break-inside: avoid; margin-bottom: 1.4rem; }
+    .proj, .finding { break-inside: avoid; }
+  }
+</style>
 </head>
-
 <body>
-    <div class="card">
-        <div class="card-header">
-            <h2 class="card-title">Virtual Lab: Ohm's Law
-            </h2>
-            <p class="card-description">Explore the relationship between voltage, current, and resistance</p>
-            <div class="linkin">
-                <a href="aim.html" >Aim</a>
-                <a href="theory.html">Theory</a>
-                <a href="procedure.html">Procedure</a>
-                <a href="about.html">About</a>
+<a class="skip" href="#content">Skip to content</a>
+<div class="progress" id="progress" aria-hidden="true"></div>
+<button class="theme" id="theme" type="button" aria-label="Switch colour theme" title="Switch colour theme">
+  <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.2"/><path d="M12 2.4v2.3M12 19.3v2.3M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.4 12h2.3M19.3 12h2.3M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/>
+  </svg>
+  <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.5 14.6A8.6 8.6 0 1 1 9.4 3.5a6.9 6.9 0 0 0 11.1 11.1Z"/>
+  </svg>
+</button>
 
-            </div>
-            
-        </div>
-        <div class="card-content">
-            <div class="input-group">
-                <div class="input-field">
-                    <label for="voltage">Voltage (V)</label>
-                    <input type="number" id="voltage" value="0" min="0" step="1">
-                    <input type="range" id="voltageSlider" value="0" min="0" max="30" step="1">
-                    <!-- <input type="text" id="voltageDisplay" value="0" readonly> -->
-                </div>
-                <div class="input-field">
-                    <label for="resistance">Resistance (Ω)</label>
-                    <input type="number" id="resistance" value="5" min="0" step="1">
-                    <input type="range" id="resistanceSlider" value="5" min="0" max="100" step="1">
-                </div>
-                <div class="input-field">
-                    <label for="current">Current (A)</label>
-                    <input type="number" id="currentDisplay" value="0" readonly>
-                </div>
-            </div>
-            <button id="addValueBtn">Add Value to Table</button>
-        </div>
-    </div>
-    <div class="card">
-        <div class="card-header">
-            <h2 class="card-title">Circuit Visualization</h2>
-        </div>
-        <div class="card-content">
-            <div>
-                <img src="imag.jpg" alt="Circuit Diagram" width="400px" height="300px">
-            </div>
-            <div class="gauge-container">
-                <svg viewBox="0 0 200 130" class="gauge">
-                    <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="#e1d8d8" stroke-width="20"
-                        stroke-linecap="round" />
-                    <path d="M20 100 A80 80 0 0 1 100 20" fill="none" stroke="#22c55e" stroke-width="20"
-                        stroke-linecap="round" />
-                    <path d="M100 20 A80 80 0 0 1 180 100" fill="none" stroke="#ef4444" stroke-width="20"
-                        stroke-linecap="round" />
-                    <g id="voltage-ticks"></g>
-                    <g class="needle" id="voltage-needle">
-                        <line x1="100" y1="100" x2="100" y2="30" stroke="black" stroke-width="2" />
-                        <circle cx="100" cy="100" r="5" fill="black" />
-                    </g>
-                </svg>
-                ( V ) <div class="value-display" id="voltage-value-display">0.0</div>
-                <!-- <div class="label">Volt</div> -->
-            </div>
-            <div class="resistanceInputDisplay">
-                R (Ω) <input type="number" id="resistanceDisplay" value="5" readonly style="width: 50px;">
-            </div>
-            <div class="current-gauge-container">
-                <svg viewBox="0 0 200 130" class="current-gauge">
-                    <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="#e1d8d8" stroke-width="20"
-                        stroke-linecap="round" />
-                    <path d="M20 100 A80 80 0 0 1 100 20" fill="none" stroke="#22c55e" stroke-width="20"
-                        stroke-linecap="round" />
-                    <path d="M100 20 A80 80 0 0 1 180 100" fill="none" stroke="#ef4444" stroke-width="20"
-                        stroke-linecap="round" />
-                    <g id="current-ticks"></g>
-                    <g class="needle" id="current-needle">
-                        <line x1="100" y1="100" x2="100" y2="30" stroke="black" stroke-width="2" />
-                        <circle cx="100" cy="100" r="5" fill="black" />
-                    </g>
-                </svg>
-                <span style="font-weight: 600;">(A)</span>
-                <div class="value-display" id="current-value-display">
+<div class="shell">
 
-                </div>
-
-            </div>
-
-            <div class="volatgeInputDisplay">
-                V (DC) <input type="number" id="voltageDisplay" value="0" readonly style="width: 50px;">
-            </div>
-
-        </div>
-    </div>
-    <div class="card">
-        <div class="card-header">
-            <h2 class="card-title">Results Table</h2>
-        </div>
-        <div class="card-content">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Voltage (V)</th>
-                        <th>Current (A)</th>
-                        <th>Resistance (Ω)</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="resultsTableBody"></tbody>
-            </table>
-            <button id="plotGraphBtn" disabled>Plot Graph</button>
-        </div>
-    </div>
-    <div class="card">
-        <div class="card-header">
-            <h2 class="card-title">Voltage vs Current Graph</h2>
-        </div>
-        <div class="card-content">
-            <canvas id="voltageCurrentChart"></canvas>
-        </div>
+  <!-- ================= LEFT SPINE ================= -->
+  <aside class="spine">
+    <img class="portrait" src="data:image/webp;base64,UklGRiw7AABXRUJQVlA4WAoAAAAQAAAAKwEAjwEAQUxQSJgOAAABCUdu20gSHAdBNSr1/wd3d8XVyyy3iP5PAD7DsWw7ABCxgOQZgrwEvKlGAY0XaZpWMjNJZgXtIqmx/R1su4hdY3RJr6GbIFNg97HDdU2QmQIIRqeEFUNKgEr2rvF2DbhP2V7lM3BXwa0A1dan4IArSHIOgEdEhRIAETE1ZPPMvALP14xLcHoBrzFkVqCs+g9hOG4kSZE203+zF2obDn4RMQHH/hRWfclrMI3cllnNPrNIXZMJM3alSJYA2YBlrBkhgEXJ8NQwRaziLBbhsdLYJJ55DpjGm7x9xrIW2fD4JxpI22b+7W9/IiYgMV3bdmySrPN6nlefkWFkfpG22ki2u7dt27bGGu4fsKfWbI/0I2yrnIz4vvfaZjxPvGvvSURMgF9t25a31bZtOy4Zk4ybGUvmSeDqXu6Kyrvl+p4MZu6Y+b7DzBzHASV2YpYdy5It6YLz3IuMzvHuNiImIIP//G+qLAsBMsII2/+OAHcAEmCwFIsYLYVYhBglpPiyxTIYQD7JCSRjiLEY9JrBqFcVda/p12UIZRGrEI96/d5otPNsa3unP2wItC8TIla9ql9XsRytnZqsn+pXdV01dVmUEUlE2pZcV3Vdbpdld7l95+FGE4D2XcT++v6F/el0NqnqZtBURQw4hCj+XWNAIYkIct2bv3B2ZrlfiYDYR6m/efrq3atnxlUIQggjC/MfFf+mCAARUG+0b96cW17o1UDsk9Sc+ciD6/vzOgDm3xb//SIgbax17t5+sjBepn2RCLc++7PPDYRB/A8XhHLqbyy852BvK8d+RyJe+rSH+zLif6eAIL3pTa/vPShjfyMzefzZl2rE/2oB4wcnbs2UOsHIDN/z/i1Z7H4hVv7869vIJxWqs+99+5jjUtA9+kf3R+WhTySDhx/aw8fG8+WTte3TWy+fuUU6UYjq4FIDOlag15/OymfM1wCdHMwbzypaceyG/rAXJ7d+4FNuDzhBVofPEcewFXvDrXM/9TM/+zVrOiGIdjzkmBYKZX3xwU/+xnfM0L4AHDm+BTTNuR/79c9vCP/EVL3ieG+lgrIcFyfBVsFxx/NNVfWzLzbmGx93jigiN4PNrWXeiWgvBsd+BBLNcK3NO/KzHfbMYOvqdsi44PEq2hskgtm1u5N8E+t3U7BXBtSnbl41yjPRrDehvSOCcnp+uCLT9dYL0qoYJ9cvVDkmhrVJbzHbj6sMo/oyk1pJoYwv3syw+tM/FafmX4fK/4AyS9z6IlIsUY0PI7ld3ruKEwTEeX8HZZXY+TRMosv600sy6+Z9Ui0Nf+og5FX85BlKFBTRyCn57CfjREmEVpaMgs86B4kCkQapkU1i/0uxSLXJVVM1Rj28BekCUqrrbJI8+CIsEp6bZqdXyqPgWx+BpKWyt7zUTx6Jz5xaJLyt+quP5zZri8T+50HChMrtspjA48BHrjhlkHaGTVPLInn0JbSBhKvqPVte7JvEw/eDUkaq+msblUVi8mNYJD1vPu00RYRFD38SUrd8t5PGxx2i/OqvRSR+Ko0mDh1s+SPOfO89p+7AW16Npg6Mhz1wNpL8tm5jqeVhmz0Od49Q6lyOJqHFVubIGwucPMJw8sabdqwyB9b7ZKDqSR1ZtXXMnmUOoHrz3PqsCVLmbL/IAYVisjEZD0aBnFUb9pcofUDRaLUcRucMTHZxFkjl8vW/J3c35+RisT/94+zO4mUuSP01xiK8WXueCxDKOFngrJm9yAWLVdPKzsjFFigPQCpfNekMFCOcDaE8ouVNMyAfvTwaJm8GVTaIo9e1U8mbYTbAYONVqcbassyIeqeu8HY+zYeoy9zN1uj2Vj4QVV05I9enS5QLUtRJxsDyGRk5yIcCYwVyNqhQNSlvwmqJMwEO1P1GxkD9pIuLwXR0A2vj3OEcJoi8vY25s0cGyAPoLlfmiLtz2Pisk8yBhRkbtD6QOWLlXBkeRNMP3I3U7iALaPrK7sC1W5hY5Iy/nespPCh2R9mjKB+WyALtbUF4A2Q8tEYDDE7JA9REG1Q2JhADBgsXRRZlF8phNGhUeyCKfjCoMQHUaxsULRfYmTfoNYds6C0YNF2YIDYeGRRhApGeEAHIGeRCa6IzPQQIGdNkE4KDr/liM1k/vbGBsaPGBDjw4epAq14//NPbxnRLG1phtxe+4Bt+HGXLUt8GY6Nl87FPr50t3W1kAlZw27L2qTdQrlTbhAvYrY2uPC6s/IggctPDSTtA79qEDFUGRitWKFhmLUPkyfe8qZntNFaEYIL66xmib3z5Nc3tGx8jfJARCuUoO8Lq7qdh7P0fwssgEYuYHfAlpAIIKyQg1mVuaNVcVgR+CkKvyQ4flARmCkCE0KucFzAVth5RoMwocLT1v7EK5GaA8MMrEG6dHcJPm1ULkCF7KNwAeSWInJAV5t1ZQliuQIMKK9Wyi6Vq/1VSWAHzMkskWpicxEt5YcIQEHDolWbAWBgqDHh8ygy5IEsFspXMAOUJBkhDOyRDBBjIAzNEyoYAIUBIIzNgu++ICIVMtWWGuP8Q+QGEaLobbsTWIp4KvNozg+A44YexxOGdTTfg8ELIDlpDeNmuQl7kuH+e7IbbFVivLGJnYJIKM1pRCJiTH/LfzYW8MAUpUS2+0g/z9ChmKHKWWjvz48gNgv8zKGQFyjmIjXXCD3zuHlaYhCiq2QM4qpXDWOk2R6tpuo/GkCFB/1gpZARGUY/WSsIRuPg3rAxZVIOlQ3gao18+DtkgiD48fPZ7r2YKtM8IH1NaEmr/41GmiPLys5ALavKK2POrlidE7+gsNuZGhNjUR+Tr0gMjEhIe1BkzXEvhAgkirkYZkwYJByVFg4QIypmyQQYgMmTs9vCNjKFq2PsFSHVZSi02x20Ruaz3PgU5pKap60T98NW2QN4a7X3p8aHXJyQlynJ+LZArwcrGXie2vjf6xruajPLY5vX2Gwlb4NHDpLRB9/idz3zz3ROR0/zVrdeCcFUs/GelaJ2yzNzsYOyjn/3Qm4bzC9OH8Lb6y48WBHayoDMIMfna1xVrB7C3862v/dLfW+BEBW1CITyWmd6+sV+/svH5SVJrcINA8TKyB2GoSq7/NE5RzPK8XsZiCVXjOz9Mmu+0EFYrFM2pG99kpUet8jJhFijUm9++JMXzbRwP8Yuf4eQozgYyTL7zp6Q3mKHIlg1/Oz0qVmdw3QslJ24cRJbJb+4OrLSEjhPZMng6WJBWFaszhDyT35hFKylx+hDC9Vfjlkmoi/K/RHZNfrYTUTra4nIX36VXq0lKSH8gsm2wfKUpSGYbri8QMs7N40vpEH96FBnjxaVPG1tpsP7hKIH39Ucvm0TwR4vIO/nM4wlKArw2xP747mukcuegffL4vdtOgjj3TsI84MqdgFLQDr80prCvOLtNEuUvfs4/uX/llFOAY/4yMg+YX+5ZCUCcbhf+cXBRJCEGf8nIvuLaDkoAiuuXsF8e7zdWAghdHSDzgNnVHikU1XoTsk+XzyoFEPX8CPdFtTNLg1i8bB94eO6JnACC2RX/YOu3SKPyhfVC9lW/9qachGL1HPbLv/MKqZy5tw945fVUSKsj/56+iRMR0SkhZN3LpygNQDn9RnIEApm2fEIyIyY/8snXd3i+IBx75ufpAHPnK0+cfrTUa4CC7BYvxmVKgILUebq0eOvyzQoCWeXV9Y3EtBQA9erZI4cfQTil1fQTC5QUIQQRNHf++fdrpU9iVVz5yAZpliLq+//97WWsLBLMrl/bVKIAqWD2N1dFBguG5+/dHJEwEDH64HvWQHkj01z6tE+/NUSkXTSX33YW54xMsfO2d18bB7Jweu38CIdsga13feDuRmkysbh+/xI45IhM//Tb7uw2oEyQmdz77Nf/zg75QVi85/Z2jTH5aF1ZjN/865UDygnTbN+8NJYlkZHCGp/pv/nXSyMpE4TWF2vDaERuCqu/v+a3nraAsoB69+rpGkSOCqu/f2ZnePhyCSh9w73FWo3IVWHVpy8djJcrr4ySZvr728PAGMAQbJ0/dndx+bJFSheD9bUGgwXNwv12E18+MUhpCr35KED487xG3fFgoPbwEEBKjCjGk15AmCxS2Qwnk+mwYtkCKCU0s2kFJp+lUBRlf7K5tbFRh2ULKBGmms8rcltArEfzzcVsVFWBlQlJ0HDWC0b5FWI9GJ/aHI8mg7IsVi9thI+7/qwRIr+FYlH2BsPZ9s7e4vS5xeDwCQh8bIlQT3rGeIt/sx7tPHt48fyNdYiQXkz05sNaZL8hEHm0fuf/R9s7UCC9aATjxWZhToqCYPjw8umLD0ookF4cAsLB5k7DSVIQUD49//+r9ysokF4Ikulv3f3orNSJ4nkRUM3fOnv+6hAipF0mjKZX3/u+26PgkwcIFcDm9eP/ujNkl8tQbN16dO/8wJxcpQhYnrl49sryLpJhbXH78d1t45MMIEVA9eDc7lEbzn34Vv1aC3bgxGtTsGtlb3zwvU8ATOBkLO0aqnd8qAaDRMdphgc3nmMCHWixfrC9ah3oPqV6++xUNh2oreH6UFhdCGUTA4hudDyiM9VRUXUmq2DTlSqWga60PQwRdSR+8o9LTDe6Onz6QnSk/VEFHYn6a/MS04GK8vywDnSk/Vsf7svqRMq9+492I92nIGzcevjOPh2ozPD6o/fsGXceMr2D+w/OR4w6D8qDD334csRIdJtCwwt3bu5EEF2nafYuXVmXLbrPYvParb2+EN2nBov3vHNTdKFSuX6wVWN1IiEOem7pRMvhIIDUhSgM5tOCblSrF88tOtL87K///JCONJonf/MquBOJcb04XHUjyjHNk9Z0onV/GPkIcBfSX60LmW5Unbk0BqgLCfHJPyyF6EDL+fogtqILFf3efFrQkfa3/uRPj+hG4+TMvV2WzjM7LaG/dvnBlTKI7jM2k9mtj+ytRBe6Pt94171i6W7k/OJgHEVH+hkXJqgz+cxhgelKdwuJzjSIDlX8f0Tr/6rwn//85z//+b+eVlA4IG4sAACQ5ACdASosAZABPmEskkYkIqGhKJK8IIAMCWVu4XHOKxle0w1o8w0dPKPjwAO6F6U6CG4h5sv9wvfb6AH7R9dz/S/VJ/kXn2ez5+53pSZsR/fPxV/Zf5XeTv7b6uvWvz2B3+q9z79EZJ2fv5p4F2/NXmaOH5Yf+A9QT1P1Of7x/rP8R/Xf2y+lH/h/8/or/Mv9v/6v9L8A38i/qH+3/vXae/ZH2M/1kP1rIMQtnj/irWQYhbPH/FRk7oyXeVLx2aStDfgmZHHiDIMP4Kn4xT0W8a14pQ3j96iJtoHEKfCVkPCqAt1YfLH4GaYiHNKgogFdo19cxmWUWSoWzx/wi3gnxS/1x+sD7jxBCs44wMD3qeHViXc4rwAaF3qWI5cjGM/821feLYsaI+2Ad64eoRRrWQYhbIt6Dzc4ezF6ZE7Ve2SCOZ5ZhYF1mTBXhLj1VL/ynEvt/BuP07qb8pPoowKYQcTTZ5nZjnAzCslTpl7Ma+QdsF66Cy8AttcRi/F1+tNX29BjFQXikEt7kbXP2fQfsWoVHBiFs7kN3WtTusDsLqsy/llIqlBW15v0UKcBLTPN1oB1LKqJeMk+pGsWELoB29seatIegfOENHAcrFrCMJVLJXUymEcBLBXk7PmwK35GyiYeWm/a2MC3mxAwYxF9hv+0wCAtgIYDWagOP6YL8psIbG6DuzH/FWeCDxYmk6NSDUt4TtNdYVQObJ7Fwd7lLHfyiq4qoauou6zZduKe6erkQ2PCM0Xkmza/9iSHfviRwOeCKCMV5efzD416fHjxVrH5Bk17u21+Q5311LPvlA0ekyRto7J6HdtMcbRDjViLE3BZJp0OMaMpr1fGHvZIfbEiDpRzQ/hpUPrQjvzKFflSz5s/tgxC2eOkVHXDWqF2ul2UXLiQc9CVowSTYGe0zn6xE8hm1QICQYyaNeVvC9iEQAmW6JJ3mnghtKzCxWJLifNz8wP7o5A7Lagv+KtZACxUpnie50cSgIFhn0aeWXzXwzSKfuWQeRvNgT5Ldik7OmF3c2CH/F4ggLRilH7HXcGsPjCPEyDELZ36DuDrEDjNV8mjRXdJvCYZE2evBT09vy5mWlpukliGY+QgWwP+rNiP8VayDELLq1p4cZoiFORRMCAXBXusNhJhseJVZB+ojnw0eCyGjZoj8QEWHWb73u0b9dg5WLWQXsgePxE6LbLPpWlm6wXKuzbiir4UNHIQ98A2Ic/fwnyd/Plfi4x+93Ii5Q5U9I6WHzr0hGJPv9Fh5rL+dZSxf8jZ5m1hOqJsW4ufLbheBYBdowFSrcUratqzeUsynl3NTTfEL3o0Y83Jvc0xsXBCDX3Z5DrgK7ajLLkpVRzVMnUMFYfMKux+P/z9ULKX65MjO3hlKF5+DSDIOdItvCo6REnmse3mbHSs2h+ZgLU1i0uhPoaxN/5F/Tpc74JgzeR9yMGvsc/RsaZyk9fGokzrfdtphhdE2CpJ4kETScjeRqFq58cFFLLk3VUEj/JHSjFVQM4zv0ZUeZBvpPhX1ccmxp03B0tpyd/cG4ldQDiBUp3Fyg3vgNoNaBRRbspM4PxmVW5IeUDCAPm/UUMI/F/sYE/VuJ6SeLJIHjF10bbbMR0waWqmVjpMXeqVrDuheejzi/smIb2QHKaRRtsqP5B44vVdi4zuCytdklPcTxoXQnvqSySM1z1Zds69qi1d8+dhp3bH5B+eLtXbSk5Whw+VT9AMr8DR5KDKYM8FonZQSiV4TLlIUM0htGW7tF2kMafLHhR+zZ2wv/kaNKF7b2aGnjG0tiAnWdqkkFlX3xi1S/yLVw1DyKa6QcvLdq8M3WGI4wKZZFzQdvrXYBpYIe6onfsfiqBOFs60IeTaaSmdYOKP1jzlcBsWs2BuhcL8Ys5b6gV/C5FvF4xYRAyi4In7FX2faCWufc/p4TE2s1W6xMLPp4igVEXlchUf+vZ24bf8z4SrSsjr8Bcu7ZZ0jUIPV9J0ABg5N2NLleToOOVnrF9cY3RueuAJlZAPRFBOrS7O9yvzgld2hjQHwmwfbpajX0t9vP1iVNMFZMjEVCeqCak+VPuXSXlfpuQVmaTfY0pn+eAUqpgCxhq3iqGUgbL0jnKMFzP1aHAqnQITlP2OkCeVxS20+pdhEjp9q3pab1PbSHwZRBFQF5tvqrST3N4StBtPyzvb+aujIybP95oEuH7cOSO9Vcz9vuGvA1AtljOCWt1OjLfKVBIlAiu8cjkK9eAx8XkwRj1XAy73i/zRo4eWfLciLEoDPWQCoETuPQsylJatnp8ltPOEYXWcKbjb5OuNZigNmvvZsWxA/4AQh3jRQ8e+CsWHkVCi285yUkmK7iocYz8nJvWoOaJXF6CX3I1gPJiQl9dddzYFnVOU/aXfmvngmAJjZqsL9So4RMA9etN0xEGcXiL/WqcTKfkFOl7vX7uWA6T/SEs2dnwJVlhOjhiAAP76kpAAAACHsarchFJCA+4/x7Ebc/vE8351Z+Obx8tLqRIqv21EN1sfKQfW6f0T39nmy4n7LN1Qfr2Ud57+lbBdKjsub79KvXeD1yu/SCbcjt4olCP9wzb7R/OaOqWSY/CAQoIB9V/zccSP4/wJWfaK7Otrs0qC4sjHmZyAADMlxQ/nF2BuWK1G86ClG2xV0rd/n+25Ogy8XG/25j3V3/v/CqiEqmtVT60mJr4Qvp6vQ5qjjpw0nVMS9qLda+Keqg4dVslZLIrm7yamCg/KJP6cA3sJvxvGDFdConJuNQdT1JFH+b+qAq78q3UTIq1I+LfzN1C42BEjwL9wXVJCB9hpp/oKJXZPOLUzTSM/Y2fX476gp8I4794jlo7qBStpmQF1gaIrINXAsKkxiwPvx9xgEyZdwIK9vdsP8NWHfFw54YEHuYhquo2ImOqFXqRw058qVu/UUYY+skOd6vQmmY3e9E0L5VIPAEImKSofyrkyNr6+Vr3sBHomEesjIR2/RiDjHsYZj1OXCbnsqQ62CgEhgtMOf8u+DjRHxMdxLJdclPaWYi0JgwrlHoFaBKn0EsyI4FCDUvM7q/xwDVnKpXmAfwsBnNYbvs5WCdLW85n0te6iGKJS7V2Cyeh9i8kt4wmQMNhh/v9vXc8Fgr4zcpHO6f8JT+Y9rqlMqYVA7f/zMysCt+HC99ySceRk08YrZTZHaJLsQy++jjDBjV4azp5L+yvtHsxDv5fnOWbbgnq4KU7YUywoSV/zwGZTwIQBOfzi2N3aeI818uwlBLlhLqUsoeWOqGXR9zx14znK+QLX+EYOveFbRQbKxQvWf8U8l95U5WxpU7f2XfYRjgxG8UHFP755zuiU4fq1RICt1Eb+Aram0mEF7HYQLYbe/y8Qasm7SIAwR0QqF10lj+wEU5NdZxTlNt/fQsd3f4j976qefl8llsJAnjYQTBPonVrXhJAMlcNS4S798Y/5BKA9rQepNp5KKKUj/adTGbsO0myAskybS9y1CsmqgS+hDoK4J2R4pnRqJWBGQbW7cqR5Fvc1/V6+EUaPZt1yfm6rKH0oy856TxotXb5+ZE92CtWLly6A4m+grrZsF/znZrKneVjOLpxZixCes6o5nBDYfeGSL/sQBoaM17na7vjL+9di8Vvj+g+97orRzIgxgppNqgjCrpSfPeyb/57fMZUJcy9dnARLOK5ueEXnjyrXfQjubDBpGn88nMimBiA1h4bWl4r4cn90Wkb/19HhR2oMr9jqty+1723jg2pzlmXYt57UrxC9wACdHmA4ynjPjX5LiWDNZofb2RR+53cvGhin4tNVAF+9kfi92y/hzA6sBc2Qo+tOiPIrNSg67IRoRC8kUtx89R9XUoX7iKcMcrcrl5R8nL1h08EQGZepC4QEe0C33bQPcAKuA3BFAV2C+ceV7xtsvEInEH/EH+n9wD3nCiYWF89LePxM3fsw1wrlh6N/Zy3w+kEZ8iwt1Of9YTa8NFMC4UlC98o6Q7N4gwJqXAY5vEJkJ6PcPfxjiGCQbhZKV/rGjSouHj3/qaP17jiZtdNfM6O6KtYhx9W/dh5N7yjsPxZVC7wWeqHGF4KPQjfZaTdTB89adAjM6GGrBmL3Lb5FU3nnmdf3cFQT8534a2kxgXrVpdzCm7qxPZXv+3xC1jQMJ7ZhRj4vGW5hlnG0OD3AQNUw9h35N4mDVE7YEWpIfa7Bm5cZAsSc8Gp2K3WkIE6m9wkBFm7qWYt7P2hFyaHpqMVtmoscpqogEqndhgOR9iaoAAAAIhx6HkK0MM2kqat305vCn+rTbFaE5Wf5NzEui1FHKBmYAtZjfbNKbqA+im7qHcBvY9AjXgLGDzfpvhzMgJLkeIiBPwKAAr1oIJW++7KfNKCN2Kt5jP28c3a8yyqczGC86Ay9sWQ+iuCUSL9P5nfJZkuxw2uH0x9BPRySgmivZwgSnbrXbyP5cypwXEF47NksvePfh51Jz1eQwv85oOUX27he6uZi/MquNxQwAcXfy1G1i1dOXhQOKbEOToVgcVGeNH/DleOYv6rhtrUDVPo50om48XzyqbBroGHCj61aArcnYAiQ7m0NGMisP3C0ckvFrVbCVt8fTo2NkSf6lbgne/Qq3141BTdlLN0G6sOWH3TloSYQQwUqJKTNIzd9wKdMYS+FOAgefPdyy67JfEkQYxI7JZJIvJ12hpWw7kb9EqoSOjHTlZed70L3qooIn8kiN8nqRiubLjov1FQSnZO5eEh/dvfNdLN5HpKaKIAAvnCRmvXGPgmvc0+DU8vKul4F76EluQBbgLy5soTiG8xz64tCz7w6MOUbhO2e9YRfH+tz/yq1RgJdajXpzIymx9+lrWyTDZEg9BEMRDmmd+1+Ht6i+OBj/bh+9i3rldCBUyZnU15XVap+l4XOx5Q1DB21oV3nKwB95/USWlpR7Yh+XWR19VX4EgsiS9UXGnMXq1dC6o6bqoF6MJ48G+sSn23BLwICQ5ft+qK+kVTIimeP4LqHYP+diyEsokYjHhU+xH5yOFeXaVImTbxVLSCTMRwd2AHJ39d9NA4QNg0LgIJBOzePOof1MVsreZO9x1f6syosJbyY3SQYPpr9Gu1ZVO2x+AxR0iJdHZRqG2e0Z9tFcDybxS8wegAe8EhfMPum984VfvGeh9AScpoe79uTftxKXt5ZpS/BwwLvpbjpF3R7EtTbuXK/K/jhxVhNtqDAISGTpT46ed3hRZyRj0GYdi0VMXd0ne4hs3RQitU85VeBH11Q4eUzvpHDa/h41aW6T4O4/ECZ/k5GcwWwUkf/cd8c9zQEpLL1zMVnNuapAeziQBeo3UeUrAiiaFgZIMzF+n0ZS02EVQp2fjhIwdZz17oz+BpCn1jBcm9j1/MTZ+D3NuCt9CZ7YWiYoji74iyNSYL0YbYO9pVlgEotEEH/1lIvrleAZT07XipbkU+0Y22tM6gAL9Zh9lN2/mkAcPaM/mrTdTwq7LQkAgZ523eslqFkUOZcp3x2MEL/xzJcKs6FW8hr6RhMR7qlIqusUQX4z2QyxRl6w7RBDvAcuNULmWrQLI0VvKCIov1GQBL+NAloyxWBdDG6oz44HTUc8cgAGKTN6VLb+P7Ptxj37m0VAXTDD6VX2ecbRUsK/eDluowx4iwydV+SfvQAXnxO3Mf6TwBtjH/NdFzbpNP9AgjsxqUCDf4BsVmqJk/RBHrZBPNQNLTt88lEk0diUgj1vhJY8CDB2gqQR4vppJ66e+lCwXx3U1/TR3BM+/JtwbHbMBQro4JkuDIy/lmIS0OY3HQnPUHDdT5dDJ9+qGCzTyNuoFea9Hpc/LVgIt2L0Ki3138UG/3RbwdFaC6qe4QPdcvXY6Cp7NplVnXp7GDEWyH4TfMsLg3xh9ZOYH9Uydr0EMTMdqnFGLLApb4R7CW4N9N6mRv+9Pchwkieub8xfl0gUE7t+5VGG5Na845qxDYRfdJH69dk4ztV7O+CIzZmNibGmfmI96JgOrj2igmXfolFIKs+0/L1grYixI4RzSnixbBaeOUdiuYoZElWaSgM8ShXp4jdYa8PvwG47j89JViaM6nrcoqbOeSuJcvdY9J4kV4eVWPfzPtIgQyQ0Oi5ORmhdlJOWYvIWLDWsdfiGEHPJFQcJCVxFI5iyRuN2rNlOBf/It1xZL69ofTf/iMnf8tvok5WPka2VCLPkr/xxhBpQsJA1t90rV0ICI7g5AOVaBufNsNkwtp1XHuEsFN+3TZGg1Cn6tWPRles1wWuRCFOYUeJBbpxq5ydB4TKofrWrOTVwNCTkyLc8C4Ptz/lyGrI4dg61HgIrzMv3kr6gKlabkBGMd8b6XxcY3N1BnP4Vd94L/q+Bt2I4yr4X6UQaMqJIREoSxuBRKeMR4RLVTqzZCygqshIdyYE0iAew3UejijnDmt1cgh0ysvtLjBKHrSaW/8vQaGkYboa05KVlEyxxIcOgUxNfy01+LPUycZCrBr3B9yAg+B8S9OTB+v5tyUjLfK0vz1bGrs5cJvTXgm8iRmrHppITyPKb9p7wzTxAu9r3QY5YNUPR90oOkAH8HUxBw7ph6qx0vRfjb0AOAzCOpmZ3SQNC0oGnpNMEFNY/1hoqOxf4F1XnnNXTYoaCr9lwoPXy4cOY1OrEqGmDsfnV8tfDyTVL3wcVojpm4rz4usFrAqy1bO8IIgbl7BV1T/WrJ7M8fk7cesEYrSnovfhJUK+pJ2UCFndVeulJxaSlOKe+/PRq/badn6vzRl9L4l90Auj3Nj0juiU0S1nDZ4iY/NiBAHa2vLhA4ZzeS2gZ3Zk7HnuMf/fxwNX4gufp950tjzLxpb8o2SMb0yZ2ck68SviLwP43mFZlglDWR4TfjeQmqk0aFS8mgF1J+FtfwMuGjh6TdfwWdIgZTQwqsAX/9MZaNop9TqSH0DZWo6ZRgaifM1FZBRUby8MHxVI6XOhweabRLElAo9jW8BKoC6mOOuqGwzB/wAFlmDFn+Q5fdm6d4wvB69ZmRMXd8IMiKhwuRT+Hx8uW01puzv+4tlYCuKn8NJScwuRp2W3ocWtsRMxRCyC2vRzJangfyaXyGsKZOdIHVeNgCwZnCAXU3OZfu17ueRrmLzzR52LfVt/1qkoUrjNadC6z+5zO/TDTgjAqyKtvsk+0bcY1VzeVVsekkkIVdTMSX9NfkYBgLWbN5bgJ54vFNf/MQ16GEqnVyp/8efb2chR98X7sAOFuADHL/xy0I6b6eJz3AmEMDF5Q1Kw6IwE7lwH71eld8nPi+NKO+zG/+lyHnSgEfR21t1PAxFdN6jGLmTHRr8DrO9m16ekbNQqf7l6RfzrgPgBxq471HZd1d74th6Fv5QcSwhEPERagDz3CxFA3NBxiUnxMLC+MGB4ik2rnBhI89diQH+vSjuLO+xE1AWqQ2hxPIM4TKSIWcRRaAUm9i4HgJY8X7JUrhnxc5iLCCzvlYe1fN30w4MDiu1w1cZbwADBTdS2YGJ5SBD6abAxaOXNl6/OkhJU9qlKLQaseK6BNKvFi9g4Bc8XnlDzqcLlvB8T/xRkpODIuScxxa2AyvfqNABcvSItJFnP+9waY39GrLutmtyZ7VarIM++gNeUJ1oMp3PU8dWq+ZybeFDhPmdBnL8yMf0kk596XZHf9Ii16/KXw0RqF2mfH+luQ1AgVLqCnOoFjEp3UxNQ+54I27cbgDH5gMks28pOYdX+u5dkwtEfCVTcQh2JkAz78aAamvLVOY8FPDkYUiuJ1ePiYAz/mQmrz9ul8GymEP8CD44OPgyTwBgBMt+CGoIwM9XcfUTO8xmDcH4FJEjJKAAAgdJ9nkriYj5JXilA8HqwijRQT7PJJOwM56HwbM2eOr8EmjP28xk+ke8iqcElA0+g2anUqVSIBtmxsxVC9KjD625cpET1QuRk3kAqMVfYQImrEYhxMzOah+28xPulMtLvDUdWI86ICk68Wr/riKurPXunNz2A6WC19E77Mzjqq48ogPqUWCIDdAz61hr9kbfwZuHgZFS0dmodEDToZ8lwJj4ZWE7GMpySmAQ8cbBuBt1PK1GbVIlaqrPE3zOZrtpMGHHttzwnJ5beqXhQSLaDOWBDv8m/QD4zliaoFx/MOz4yioW6VK7qHvSmmGGoJSHAURe2maTP6SLw1MP5ln/J50AAAbrloLJgAJMuMD0cBbJ+nBk0CrY6RkUb6eWJkHsoCx/wwWfJla+AhMpXFLX5f4ORzlWRDl6/lxjPvJ5ZwtbvsvS/21aoZe5aAHqSBTVu8ytVR8UTtKVCYVYRTrH4mVPj/+CMlIUBIcxsxPYccILBI9vaAexF47YmQ8Qck4bjBYC1yUZiZuVBcHHpyhF/k1DV91oGDiL9C53d7MG5KZcvluNnQ7rpfyzOw7Mk83fBatOGtT+8yI+kx+PXnxS2nvraaNPJXR++8kohfRGI21Wco4ZlSfNJUHI04JT4eS9HwDSnSMGq+dZIjt59Zl+mcHJi1FHmmDB/PdEfie7f/Ga0nXLZPztYBftLuvsGV6nF+VnnQfAAADB23qCQXphz7m70DGdzAMtq7SSx7kbiVD/krN2mIQA+qFPXchyaN24xrOv13kN/zpAejLQdiio6c7/wCgYfRH34usd5J8MoLQdLS/ZHuvYEJXiVmXKBJMXZImct3OXGLuVnFkhqPRjpqu8P059xzvhahBbhbVdgLodlwwtoNa7ET/jYv9vvp34IRdNxsnHbwl9RqXipqyslMQkNBc6OsqFWywckD4SIpYYpUE/aZRZD5B8p4k2wGaiJPUAikt9l1je5ptpxraYqg+S0QhP+8NrtRVuMGFoQ4SZFQ451rz06/UxSAR+X/E8oWUQNV0EzA3q5uEVCD2OPiNg8PqpTI2Abqy9WPDCVLc71sMRw1D7ZGZCjUa3Y7j6T9nRNkp8Myj7Gz1L/+j/OiINzsLIaPIDIB6p3T/gZNxGywpM48JLgRxi1x72oNOY6ycg9F4q1Wymga87znw7aAi4YhfmIchR+Zo0We6L7eHRWSicTJ5IrXM4EigP8WXm7jyRhWnkxUUs8yxCzbLO7PGqkRiFa0VFvpMQ5d1e4f/Mlw2oJsXWs3oMscCk7WFOuaNMO3hTW8zwAAp1jbf5+JhcDt6n7xk8lcKp8WKomdGLKHPX39mmPstMKeO3I1hTzmV7kv5pvy7Lm1mEMVlceWwMceuqhkWs6WMsp5K/16wrz9bZySQFyCrJJIZvmivpm6QnYlVpyY+ANLkERRNUN1HBN0aayY89taHfAmKPZVVA9XhP5Y34fimsUZxS+GzT/UroY8IGCAp0k0g3JYJQVthjBZntCOYyun5yFCszYEvRqS+0DcGBPINyLtoOyyl0Ie47RbeVI6vMHkbtWlyL93kDsu6IfgTTr3k3CWOm8U053o1y6zteT6WGw+GQCHbcusF89vmcZU5diVOnAynWfDqq//jhV8STUIdFqpeq7hby4JshRP/TOgXVyzxo3Om0IGE5HeAD0Rj6MkenGJ5qdxh+H3C08DdtMKnbBuNQfX62ormflq1iDz45zr2uzaM0rs7EalWgsNTk9bdc4thMl9o5S5YSOTbN56kP7MTe2aEC9wnQVMVmlDCId+aTCGoGtByqJc5Tk1AZQrcZN0MS451hT8Yd37aav8wVUnnROsVZx7y/Uz0DxnCRZvT/isVY38w7hvt5r/hb7/NP+C6sVmJV1Qoi3s0TGBtixoUAwGwf3vztws50csVqViF1dQ9x6rpXw8cATWTzLaVb0XiUNqtM++GEahU2f3lk70a/5Y8mLSDEglK9m16OazWuw1+WmF+5AT8GRL+XS/FINDC+s4IxZSL0eVrnTV/UrP53b6Uf4g0JxfPGToxmEi8wKnxA9T0auPHD6ZL0eSqAUd2eOCmWQH9j5geFDi2nxn7bSt3dQToQxD1DN3J3Ls9thjRJCUpAIIaOL8BBGZDRYOqnSqbClSZTgUoo6gLy3GExt2xcdxHNdunnoNaNsapThloCh2QvRS+jmAs+JFy6PYdArfZukx510EbPSnCDrj3PzUSsRqv11edROKa1NCVEeYAqPSe+N1bW+ZabMi3+te6QDO0apmXti+GDIwyEMuMvSPtjXOvnNxpcWEvxolPDD+Hv1y+3tco/UGBIaPBYzwGfaQd1MnuKFMItxi+Rivmyo4B/GJvscdtSuoQsd05FNWKicbTwM98RU/NrW9eIXcrnqVTzgJl5bz7Q8XfshbA/TG8gtSKadj7seQ2l+aYkMnrupm39ismZjQPToPQdrlBr3rKYOhrd/R5a7XVl+a8oG3GQkLdGF4QFEEwxgZw+Y8mWOvTll77x371gj8/OPWFVXmUkRim5fwYeipOUMkc2kYuQZKEhz+ZrbwwyNEu4w/hsFifjBZJ9TrzDM/+lhJtk91iZye2f20WNrHjduyD33MX6hxc4AEFIEUy7Zvk445aOSr8qqPaXtkIS/8k+QOiZNCvEMKA2r2Hag92XJxPfHwTLO+Tt5/9AlTrwRVFpcbgkGfNpb5wfz6ulqzM1XdNqVFcR+Al+r7K3clY8/zIEf+O0Xy2vwPLQvTo+ECbeUQJFRfQDKZ6NVnv00FUQ4cZtbyYvdqsY9EAB2XiLJjaVaPa0GNthLBmkLl2xQ4hKvyICoaZQxgCtlwPqJaXAGSHOlwbmpjsZFZDjUgYPfXxTtMHsVNeOR+hjK+H3Ems4bppExkFNXLXBiSQupae2G3359mvqiL68b+wiZFf8f77PVgfhIBn2b4J4CDUBxKcRtw8uzvOtRs8CeAEMOoFrrb5smfS1HbwDI59SrQxt9ViTkTJDXpnCAd9VL/HfT5fSBS8XccCx3t/UbYFXlvbfyB2m9eMiTGl+IzEZ8vvXto7fQsRhpOXnpBiLjBU3hRa2CGbXIm82q7l20y0rhiOmEjQK1Z/2jbF7qJGUOPKtQfI+yZH8+POBI/rI57N+mQiv1Kp04RTwZN6beOcwbyfeKdgjBt7XgnpynpF3qJy/C5STTcxeS1ksLHiPkSyYsI/mQKMHYJQbxC1IICcPqfxmwUvugXIhBtz3x7Yps1sjPII2DKCVwBco8QDa2J7gLH9Cti4nMcFk+vFCXSJu3zs0cwjv0hPc6v785yN1uG7UKBM20avMA4W8oabTM5TCwaTeSYGWKRpGbC3oqePwr06SB8nlmjsApRwZfOsjwPkpbIBvnfDlt2wHt79AxDzdbDOFdQSZlZ7k2cLRQuINJSgnpT+lx/F3eafDOOutABXu62fnntnUEYx/oqmYeBUqJB4/Ew+4Goy8+tYwaap8MJJRGDtGma1GMcQ3UkucQKXIjKD9vyHE7VK5RmrJiExH5eVqECGpC/w3QcSGobTOmqr2ZLCi3qRIoRaDDf55thnFF//G4K5T3JRjh95DuJEk2YZZ64vtDjsfH/99Nf7+mDPvv2VPQISItutFsQzIVWtIHIHAZ92c/gVMWjv680RRs23uaftWGn6/kPfj0ITrTZfkcOAANivvlUd2QFqZoUh+UvlPeHk21iWV8GF3E8g9MsMdrxfAhOHpZpfTNhZ2n7lyHZy+gZ+dsMdd3HVxSRrjlPL4PhjeW7awA317f2rHMsfQJ/8mz4DGNjPqPAFQvfj61MOu4Up7MDokGzvkqCHh0hfKmrFuq/rXEuEJBUTxpMkmZWCRULsejpUqbCgsfoTNk4qvc7dmMuZduoZdZwHXa/x49etIyjQ0hNVZ2GwguPIoBOgF+0u4iKZruqUZvOihofURtv4+YP6tan5aT2pl6wbJUo1PutJZ7io7PqlvyB5rDOG6PXwuyE7erw1kWAOqX41IlyEcJTyvcf5xE3u5UeodI/mGaDs1Vy42OObUpkNGL281bnIR1BXbfq+bUjiu4jbe5drXrFy7ym5/xQiUSTVWghput7YFbH3xyak4Gq3UaW81I0zy8ZxTZfbI2fscFy5nqQVxR4Qo2xAuO5OX4PS//5GwVCNTs8Dvz9vVBj53JNI6iBtcdShfMuHAZMMGkyVwoxxN9NnemJyxyn2P4zfKaFkiFpJwNFCfLvBvHOPGNPrVtJqqnnpWp4NZL9kcABtMOiOu7DwJjYtlTADTP79EgIGjrvyyt8QyOdZhamRJFuKg9RBAZ0toJOtxoBYLzKmm+xP5FeY5x8vTL+nHBZpd6SCviVyHSQuCwi/OhtVlx1ZYjMbAg8Q3S3aOO8KiBb+Vu5Y6/oFrY7kbbNJ+rr7UjNr6mILTKRN/QgnBdS8Zo8k3M/cQTKglrg3lITcoDUVFskJefGsWBSWMg9riWNLzrEmSqYsPKFsRMRimqREbG/7M2BMCsniN2XmdMmEcuFCnEzsDSUaV1b4a/R5t79sy+s29sKRC5spHyQwzmRhbQjGUUg7NHF77lTVrlS0qrolwAc1WXr641MnzolleeB8qA776tcUqN5CSKyZ7eOqU1aYR5S5Y/s8eFGou5EXZJqJY7JYXtUa/jMNmc0q1zkhYeYlmh4Bt6cZwnUs9YdSG+Dz9RqsZ2EOahF/sxxuE8bvinNHqccT3jVzjXJdnE99f9YWi1IcQxG9IIFgzRzcWT8yz73YxwRutGiAhFfUM37WBtcxB9PYj4cPPygLxz6t3XQjBeoqUL+2S3aOYffYLEWDLGAaPZS0TUJhb3k0k15Dz3gsDV752nlD9k341ITTYAk/ibnVl0dCzYZHLqE7HqPJ1RV38z6ah1zM2PjpekUj0QgD+dUrQQUJpVNymfmQ9kIUv8/SlC089NMN1/fso2sAXqDcwefUcG6YBEnsYE7gSpqV41IS+T8LIijROFn296KTB8C9odIJCbLxiRhXhi7j0MM1KSG0sOeePKMACxhN1NwkyKrME/1LQ76GU3OXkb30OJ7V233mv10qGo8kBXMCflU7rDpVm9y2LqW+wNkRv8RCk1dtpSNVlkYvcs3aOKJXNQ32Zbsk9vE0vBHRDYiNYP4/OS0VhooXAQCQDcSIrb8zw8LE7hGtKNgk2l9GKirev88hUdg6DihvItiSNfv3wDp9iel/zc5XS360cYuBw6Dd6Adj7Dpkxr/TaJPDjKzN/XSWrvvivWCvZt68CvYNlb/tDFfP1vvqLOPBAhZGLpkPJMlBki1xv3nX3Z6vnxr2/cAzCibr4VuwDa3M8XMq/aoEJQcS5eHirGSNQuNjV19o+SJh9iB4oDzwFugZGhaMKRHKX9h/7hBwz1iFp/2L+cH0S/dfZ4cGMcOOD0NgxTRHz00GfmWAR6JEuI59tO4LMjNH39NNvlMhVaGPIIyrhy+o2+g/kbi6orEHp+Cg7nBQ4uVHFQMH0qTCwbF7EOW/fXBpN9/FbFF5HkxOWldZMA4G4fW7azz0f8zwfKUgBen/nAsGI5evWsmq3WDTzfXR6K1FvvMX3KpkyMyP13gxc776sn+G9kyaKhsHxV+a2648DI1VA+u9EGY8dmto08+cBsWt+ONR1npit8Uvy6NNtvtA4VXn+QoR0OMSplYLPS01RxuB5g2dQ7sCzg+jiwFK5CUHVxWDy1aZ2AtIPfSPPTkmzUykmQmbeyKLWJZKiQKKmfqZJ9412FL6ADnIkbddyjZUelY5wx83vVwIsAE3qFof0FZmFUJWN9pfI3n5dMWyentF4j5THhiENmR7GzgTuhBbHNEf0JNP4s9D48VNADVqS4W7fMP8XhrhBQ9FttrbQeNO/RLNPMtbwpc7tPlsjnGWYONB3DapI07eo3xvGP4rRZC9ZgDnzzXl1cYmdVyVLNEuaTUr63OJm+ekKyIlsFlLs6cif0/2Jm/9sVwH0osK3Ib2AigMe5cX+sVoFo9nedpccjY4z0LhJ9+5xyQ+BBqI5D387HeYabI9ddsrs0soUmGTNNkKrSTs5ToO/LNp/pjHcazz802W8WOMwQ3G/LkvJSwD5l1W/1uihXaf65PtrX/qbCImNsylTFMewYfWjKCKGorgPGnrIHDha/3W0moIcYfNDrNttOGB1QRF3uh8v7YN9tML5Xsd9+j1rwJtOaKLN/2A0mSnI3FEIUXf/fIiUSPMmplodX10ZuyrjsmNgcHbIa+uADSB/VYWVACtRP26BogmLYpABkSzF50IyevdHHXEyZ05NmpocRBaFtMe85Z+aH6jtfFGeSq5jU24Psl7bTOd6dzGt4pTPzZ45SNc/h+yxe95+FWgCCMpksKQg5ECp11KyCJ+NX7Xndw+VrJJoZVHSVpKe4B3U8C9ndQOnSqGu+7f8SVKyhOCe6/A8ndZrzf0/IbNZ1azopTFhodlP+6I+7Nvo6KYHMA/GA4Y1Kv7mzL3KrZH8airEnrREs1GanhI4HnDgJ33TDQS1t8Qo2EiUoRKLmHybntCadqiObXnGC3zskN2eQ3NrEXDowQecSzSvtOjxfBQmMQeOP80qtAxFKJBD2wnPR0QWv1+YasWR8IN3DyL6ciWj/JiAJRDNsN26s9jm+MXKn5xP/l34+Awkp6+dT2jz87KjhpZCV0d1MAZU412PrJQMiyRWYV4hO1/6weC7+3F1kRTRlaC3U20pOrzACN+ZadwUsI12eXIb+2STDYK5A3a+drFS1yp+G4jaVfzFrutz74PRW1BIhwMalO8ED/qUxNTZLrXbg56zlzF3PyMltjV4pKw6tCbpiGICmHSokhAvEhfkzf5vi07dBWvTTzC7umjhVpRCtEXRBOW2Z/I2zBrhqhB+g8n71T8hxFQcqorsTmkhmzkyyUWEM2vyG2WG3j1fk2RTaK6QrnA6L+EymAtLubS531VIL3e6wcOQhoLvchMDo3w0aKDPiX2Fwc1nSnOQQkUu6RZauQvxncgyGwSRCjGOJURnPg7sGG8IMNwDgbvzrMn+U/ie22GTYyW08GI6YpPdGZugrUksIpt+7NdY2TstRxXq1Z0zTnLQnzStZygtT165AhrruS7sS3akdva6m1PNU5L8PoKGly4/PPOvCCmhb/Ro88sn7wWCeKxT8fHeBjmv7846/5E5iY7mU/LPA7CQvvlYVL2yoojiASjXP+PQCQ5IWXyPRlKYConSOHuS0gusWfZNvx+fZpiBc9T6I0VT13G4QtQ6bTWpzkMkRArDLmLa+EylXvaCPa5ntfsGKeNRrIGh6hXgAComWDWp5uy/2MpBnHrDVMojBmc8Yr0CfHXOvCM/FStYOQgh39pnNL75v0GHGuFGWhgZYvizy+jTnnBgj7+4m3D2Lft8TZxVfwSiZhLXe57wXHTJDQ7I25qm4DZQrj1h+Ypq9e0g64gAA" alt="Portrait of Ayan Ahmed Khan">
+    <div>
+      <h1>Ayan Ahmed Khan</h1>
+      <p class="role">Trustworthy &amp; efficient machine learning<br>Centre for IoT, MITS-DU, Gwalior</p>
     </div>
 
-    <script>
-        const voltageInput = document.getElementById('voltage');
-        const resistanceInput = document.getElementById('resistance');
-        const voltageSlider = document.getElementById('voltageSlider');
-        const resistanceSlider = document.getElementById('resistanceSlider');
-        const voltageDisplay = document.getElementById('voltageDisplay');
-        const resistanceDisplay = document.getElementById('resistanceDisplay');
-        const currentDisplay = document.getElementById('currentDisplay');
-        const resultsTableBody = document.getElementById('resultsTableBody');
-        const voltageCurrentChart = document.getElementById('voltageCurrentChart');
-        const addValueBtn = document.getElementById('addValueBtn');
-        const plotGraphBtn = document.getElementById('plotGraphBtn');
+    <nav class="toc" aria-label="Sections">
+      <a href="#method">Method</a>
+      <a href="#findings">Selected findings</a>
+      <a href="#research">Research</a>
+      <a href="#publications">Publications</a>
+      <a href="#awards">Honours</a>
+      <a href="#contact">Contact</a>
+    </nav>
 
-        const voltageNeedle = document.querySelector('#voltage-needle');
-        const voltageValueDisplay = document.querySelector('#voltage-value-display');
-        const voltageTicks = document.getElementById('voltage-ticks');
+    <div class="links">
+      <a href="mailto:ayan.ahmedkhan591@gmail.com">ayan.ahmedkhan591@gmail.com</a>
+      <a href="https://github.com/AyanAhmedKhan" target="_blank" rel="noopener">github.com/AyanAhmedKhan</a>
+      <a href="https://www.linkedin.com/in/ayan-ahmed-khan" target="_blank" rel="noopener">linkedin/ayan-ahmed-khan</a>
+    </div>
+  </aside>
 
-        const currentNeedle = document.querySelector('#current-needle');
-        const currentValueDisplay = document.querySelector('#current-value-display');
-        const currentTicks = document.getElementById('current-ticks');
+  <!-- ================= MAIN ================= -->
+  <main id="content">
 
-        let chart;
-        let data = [];
+  <div id="view-home">
 
-        function syncInputs(input, slider) {
-            input.addEventListener('input', () => {
-                slider.value = input.value;
-                updateReadOnlyFields();
-            });
-            slider.addEventListener('input', () => {
-                input.value = slider.value;
-                updateReadOnlyFields();
-            });
-        }
+    <!-- HERO -->
+    <section class="hero">
+      <p class="eyebrow">Research statement</p>
+      <p class="lede">A model that scores 100&nbsp;% on the benchmark and 53&nbsp;% in the field has not made an error in accuracy. It has made an error in <em>confidence</em> — and I have now found the same error in clinical tables, medical images, network traffic, demand forecasts and multilingual language models.</p>
+      <p class="sub">That recurrence is the point. The failure is not a property of medicine, or of vision, or of any one dataset — it is a property of how we evaluate. So the thing I actually build is <b>evaluation machinery</b>: leakage-free protocols, genuine external validation, calibration and conformal abstention, and honest reporting of what does not work. The machinery transfers; the domain is where I go to test whether it holds.</p>
 
-        function addValueToTable() {
-            const voltage = parseFloat(voltageInput.value);
-            const resistance = parseFloat(resistanceInput.value);
+      <div class="domains" aria-label="Domains covered">
+        <span>Clinical tabular</span><span>Medical imaging</span><span>Multilingual NLP</span><span>Network security</span><span>Demand forecasting</span><span>Federated learning</span>
+      </div>
 
-            if (isNaN(voltage) || isNaN(resistance) || resistance <= 0) {
-                alert('Please enter valid values for voltage and resistance.');
-                return;
-            }
+      <figure class="figure-wrap">
+        <canvas id="rel" width="840" height="620" role="img"
+          aria-label="Reliability diagram: a dashed diagonal marks perfect calibration, while the observed curve bows below it. The shaded region between them is the calibration gap — the model's confidence exceeding its accuracy."></canvas>
+        <figcaption>
+          <span class="key ideal"><i></i>perfect calibration</span>
+          <span class="key obs"><i></i>observed</span>
+          <br>A reliability diagram. Where the curve falls below the diagonal, the model is more confident than it is correct. The shaded area is the part of my work that interests me.
+        </figcaption>
+      </figure>
+    </section>
 
-            const current = voltage / resistance;
-            const dataPoint = { voltage, current, resistance };
-            data.push(dataPoint);
+    <!-- METHOD -->
+    <section id="method">
+      <h2>Method</h2>
+      <p class="sub" style="margin-bottom:1.15rem">The protocol I apply regardless of domain. Every project below is an instance of it, and each project page ends with the version specific to that problem.</p>
+      <ul class="practices">
+        <li><b>Fit nothing outside the fold.</b> Imputation, scaling and resampling belong inside each split, and metrics belong on real samples only — otherwise the score measures the pipeline leaking, not the model learning.</li>
+        <li><b>Validate on a population the model has never seen.</b> A held-out split of the same source is not evidence of generalisation; it is evidence of interpolation.</li>
+        <li><b>Measure the shift rather than assume transfer.</b> Stability indices and two-sample tests turn “these datasets differ” into a number you can argue about.</li>
+        <li><b>Evaluate every axis deployment depends on.</b> Discrimination, calibration, robustness and cost dissociate — and optimising the one the field reports can actively cost you the others.</li>
+        <li><b>Correct before claiming.</b> Friedman, then Nemenyi, then Holm. Most apparent winners do not survive contact with a multiple-comparison correction.</li>
+        <li><b>Give the model a way to abstain.</b> Conformal and selective prediction convert silent, confident failure into a visible refusal.</li>
+        <li><b>Report what failed.</b> Methods that did not work are evidence; omitting them is the same selective reporting that produces the problem in the first place.</li>
+      </ul>
+    </section>
 
-            const row = resultsTableBody.insertRow();
-            row.innerHTML = `
-                <td>${voltage.toFixed(2)}</td>
-                <td>${current.toFixed(2)}</td>
-                <td>${resistance.toFixed(2)}</td>
-                <td><button class="remove-btn">Remove</button></td>
-            `;
+    <!-- FINDINGS -->
+    <section id="findings">
+      <h2>Selected findings</h2>
 
-            row.querySelector('.remove-btn').addEventListener('click', () => removeRow(row, dataPoint));
+      <a class="finding" href="#/p/ckd">
+        <div class="stat">1.00 → 0.22<small>MCC</small></div>
+        <p>A chronic-kidney-disease model that is perfect on the benchmark the field relies on is barely better than a coin flip on 18,711 real NHANES patients. A model trained natively on that data reaches only 0.79 AUC — so the collapse is task difficulty and distribution shift, not mis-tuning.
+        <span class="where"><span class="domain">Clinical tabular</span>Under review, <i>Discover Artificial Intelligence</i></span></p>
+      </a>
 
-            plotGraphBtn.disabled = false;
-            updateGraph();
-        }
+      <a class="finding" href="#/p/osr">
+        <div class="stat">ρ = −0.61<small>Spearman</small></div>
+        <p>Across twelve open-set recognition methods, better detection ranking predicts <i>worse</i> robustness under shift. Optimising the metric the field reports gives you a detector that fails silently under exactly the conditions a hospital guarantees.
+        <span class="where"><span class="domain">Medical imaging</span>Under review, <i>Int. J. of Machine Learning and Cybernetics</i></span></p>
+      </a>
 
-        function removeRow(row, dataPoint) {
-            const index = data.indexOf(dataPoint);
-            if (index > -1) {
-                data.splice(index, 1);
-            }
-            row.remove();
-            updateGraph();
-            if (data.length === 0) {
-                plotGraphBtn.disabled = true;
-            }
-        }
+      <a class="finding" href="#/p/osr">
+        <div class="stat">16–19 %<small>AUROC</small></div>
+        <p>Shown a foreign imaging modality, every confidence-based score falls <i>below chance</i> — the classifier is more certain about data it has never seen than about its own. Feature-geometry scores survive; confidence does not.
+        <span class="where"><span class="domain">Medical imaging</span>Far-OOD cross-modality stress test</span></p>
+      </a>
 
-        function updateGraph() {
-            if (chart) {
-                chart.destroy();
-            }
+      <a class="finding" href="#/p/tokenization">
+        <div class="stat">12.93 / 1.29<small>tokens per word</small></div>
+        <p>Qwen2.5 fragments Malayalam roughly ten times harder than English, while Indic-aware tokenizers stay near 2×. That 6.6× within-language gradient is a natural experiment for separating tokenization from data scarcity.
+        <span class="where"><span class="domain">Multilingual NLP</span>In progress — targeting MRL at EMNLP 2026</span></p>
+      </a>
 
-            chart = new Chart(voltageCurrentChart, {
-                type: 'scatter',
-                data: {
-                    datasets: [{
-                        label: 'Voltage vs Current',
-                        data: data.map(point => ({ x: point.voltage, y: point.current })),
-                        backgroundColor: 'rgb(75, 192, 192)',
-                        showLine: true,
-                        borderColor: 'rgb(75, 192, 192)',
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: {
-                            type: 'linear',
-                            position: 'bottom',
-                            title: {
-                                display: true,
-                                text: 'Voltage (V)'
-                            }
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Current (A)'
-                            }
-                        }
-                    }
-                }
-            });
-        }
+      <a class="finding" href="#/p/oran">
+        <div class="stat">187 KB<small>47,875 params</small></div>
+        <p>A federated DDoS detector small enough to run as a Near-RT RIC xApp inside a 5G radio controller, converging within the 10 ms–1 s control-loop budget while keeping every agent's traffic local.
+        <span class="where"><span class="domain">Network security</span>Submitted, IEEE conference</span></p>
+      </a>
+    </section>
 
-        function createTicks(ticksElement, maxValue) {
-            while (ticksElement.firstChild) {
-                ticksElement.removeChild(ticksElement.firstChild); // Clear any existing ticks
-            }
+    <!-- RESEARCH -->
+    <section id="research">
+      <h2>Research</h2>
 
-            for (let i = 0; i <= maxValue; i += maxValue / 6) { // Adjusted for 6 intervals
-                const angle = (i / maxValue) * 180 - 180; // Map values to 180-degree arc
-                const radians = (angle * Math.PI) / 180;
-                const x1 = 100 + 70 * Math.cos(radians);
-                const y1 = 100 + 70 * Math.sin(radians);
-                const x2 = 100 + 80 * Math.cos(radians);
-                const y2 = 100 + 80 * Math.sin(radians);
-                const labelX = 100 + 90 * Math.cos(radians);
-                const labelY = 100 + 90 * Math.sin(radians);
+      <a class="proj" href="#/p/ckd">
+        <h3>Leakage-free external validation for chronic kidney disease</h3>
+        <p class="meta"><span class="domain">Clinical tabular</span>First author · under review, <i>Discover Artificial Intelligence</i> (Springer)</p>
+        <p>Imputation, scaling and oversampling re-fitted <i>inside</i> every cross-validation fold, with metrics computed only on real patients. Fourteen learners compared under a full statistical protocol — Friedman, Nemenyi, Holm-corrected Wilcoxon and McNemar, DeLong, bootstrap CIs — where <span class="nums">only 6 of 78</span> pairwise contrasts survive correction, meaning there is no single best model. The leakage penalty grows with task difficulty, which is precisely why it stays invisible on the easy benchmark. Distribution shift quantified by Population Stability Index and a classifier two-sample test; predictive values recalibrated to deployment prevalence (<span class="nums">PPV 100 % → 24 %</span>); split-conformal abstention rising <span class="nums">14 % → 44 %</span> out of domain. Negative results reported: TabPFN v2 does not beat tuned Extra Trees, and CTGAN/TVAE never beat no augmentation at all.</p>
+        <span class="more">Full write-up &rarr;</span>
+      </a>
 
-                const tick = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                tick.setAttribute("x1", x1);
-                tick.setAttribute("y1", y1);
-                tick.setAttribute("x2", x2);
-                tick.setAttribute("y2", y2);
-                tick.setAttribute("stroke", "black");
-                tick.setAttribute("stroke-width", "2");
-                ticksElement.appendChild(tick);
+      <a class="proj" href="#/p/osr">
+        <h3>Discrimination is not reliability — a multi-axis benchmark for open-set recognition</h3>
+        <p class="meta"><span class="domain">Medical imaging</span>Sole author · under review, <i>Int. J. of Machine Learning and Cybernetics</i></p>
+        <p>Twelve post-hoc scoring rules across five MedMNIST tasks and five seeds, evaluated jointly along detection, closed-set accuracy, calibration, corruption robustness and cost rather than detection alone. Friedman <span class="nums">χ² = 77.74</span> with a Nemenyi critical difference of <span class="nums">3.376</span> leaves the leaders statistically tied — so the ranking everyone reports is not distinguishing them. Introduces <b>Grad-Entropy-CAM</b>, a gradient attribution of predictive <i>entropy</i> that gives a spatial rationale for rejection, validated with deletion and insertion curves rather than by eye.</p>
+        <span class="more">Full write-up &rarr;</span>
+      </a>
 
-                const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                label.setAttribute("x", labelX);
-                label.setAttribute("y", labelY);
-                label.setAttribute("text-anchor", "middle");
-                label.setAttribute("font-size", "10");
-                label.textContent = i.toFixed(0); // Rounded values for cleaner display
-                ticksElement.appendChild(label);
-            }
-        }
+      <a class="proj" href="#/p/tokenization">
+        <h3>Tokenization-induced miscalibration in multilingual LLMs</h3>
+        <p class="meta"><span class="domain">Multilingual NLP</span>Sole author · in progress · targeting MRL at EMNLP 2026</p>
+        <p>Asks whether subword over-fragmentation <i>causes</i> miscalibration — models confidently wrong precisely in the languages their tokenizer shreds — separably from data scarcity, across six Dravidian and Indic languages. The measurement phase is complete on FLORES-200 across seven tokenizers using fertility, bytes per token and Rényi efficiency. The intervention is a <i>language-ID-free</i> post-hoc recalibrator conditioned on the input's own fragmentation statistics, judged only on leave-one-language-out transfer to languages never seen during calibration.</p>
+        <span class="more">Full write-up &rarr;</span>
+      </a>
 
+      <a class="proj" href="#/p/oran">
+        <h3>Privacy-preserving federated learning for DDoS detection in 5G O-RAN</h3>
+        <p class="meta"><span class="domain">Network security</span>First author, with D. Bisen · submitted, IEEE conference</p>
+        <p><b>DDoSNet</b>, a <span class="nums">187 KB</span> detector sized to the memory and latency limits of a Near-RT RIC xApp, with a dependency-free packet-capture pipeline over 21 flow-level features. Trained across five federated agents on a real 5G testbed; FedProx at <span class="nums">μ = 0.01</span> matches a centralised detector while every agent's data stays where it was captured.</p>
+        <span class="more">Full write-up &rarr;</span>
+      </a>
 
+      <a class="proj" href="#/p/regimegate">
+        <h3>RegimeGate — context-conditioned gating for robust demand forecasting</h3>
+        <p class="meta"><span class="domain">Demand forecasting</span>First author · Winner, Indo-Swiss Research Hackathon (ETH Zürich &amp; Lausanne)</p>
+        <p>A sub-50k-parameter gate emitting dynamic fusion weights over two <i>frozen</i> experts, conditioned on the observable demand regime — volatility, Syntetos–Boylan intermittency, a shock z-score — rather than on the experts' own predictions, which is what places it provably beyond a stacked meta-learner. Best overall <span class="nums">WRMSSE 0.734</span> on Walmart M5 under a leakage-safe protocol, a <span class="nums">15.5 %</span> improvement, and small enough to interpret with SHAP.</p>
+        <span class="more">Full write-up &rarr;</span>
+      </a>
 
-        function updateGauges(voltage, current) {
-            updateGauge(voltageNeedle, voltageValueDisplay, voltage, 30);
-            updateGauge(currentNeedle, currentValueDisplay, current, 6);
-        }
+      <a class="proj" href="#/p/backdoor">
+        <h3>Backdoor attack and defence in federated learning</h3>
+        <p class="meta"><span class="domain">Federated learning</span>Team lead · IEEE Computer Society Global Student Challenge, 2026</p>
+        <p>Both sides of the problem: a stealthy distributed backdoor combining DBA split-triggers, constrain-and-scale and Neurotoxin durability, against a robust-aggregation defence using cosine clustering, median-of-norms clipping and Multi-Krum that holds without knowing the server's aggregator, with up to 33 % of clients malicious.</p>
+        <span class="more">Full write-up &rarr;</span>
+      </a>
+    </section>
 
-        function updateGauge(needle, display, value, maxValue) {
-            const angle = (value / maxValue) * 180 - 90; // -90 to 90 degrees
-            needle.style.transform = `rotate(${angle}deg)`;
-            display.textContent = value.toFixed(2);
-        }
+    <!-- PUBLICATIONS -->
+    <section id="publications">
+      <h2>Publications &amp; manuscripts</h2>
+      <p class="sub" style="margin-bottom:1.3rem">Ten works, first author on eight.</p>
 
-        function updateReadOnlyFields() {
-            const voltage = parseFloat(voltageInput.value) || 0;
-            const resistance = parseFloat(resistanceInput.value) || 1; // Default resistance to 1 to avoid division by 0
-            const current = voltage / resistance;
+      <div class="pubgroup">
+        <span class="eyebrow">Journal manuscripts — under review</span>
+        <div class="pub"><span class="tag">J1</span><div><b>A. A. Khan</b>, D. Bisen, S. Nirkhi, S. Patil. “Generalizability of Machine Learning for Chronic Kidney Disease Prediction Through Leakage-Free External Validation.” <span class="venue">Discover Artificial Intelligence</span> (Springer), 2026.</div></div>
+        <div class="pub"><span class="tag">J2</span><div><b>A. A. Khan</b>. “Discrimination Is Not Reliability: A Multi-Axis Benchmark of Open-Set Recognition for Medical Image Classification.” <span class="venue">Int. J. of Machine Learning and Cybernetics</span>, 2026.</div></div>
+        <div class="pub"><span class="tag">J3</span><div><b>A. A. Khan</b>, D. Bisen. “Advanced Vision Transformer Ensemble for Gastrointestinal Image Classification: A Memory-Efficient Approach.” <span class="venue">National Academy Science Letters</span> (SCI/Scopus), 2025.</div></div>
+      </div>
 
-            voltageDisplay.value = voltage.toFixed(2);
-            resistanceDisplay.value = resistance.toFixed(2);
-            currentDisplay.value = current.toFixed(2);
+      <div class="pubgroup">
+        <span class="eyebrow">Published — peer-reviewed conference proceedings</span>
+        <div class="pub"><span class="tag">C1</span><div><b>A. A. Khan</b>, G. Kushwah, A. Gupta, P. Bhadauria, L. Shrivastava. “Advanced Predictive Maintenance for Aircraft Engines Using Deep Learning with Asymmetric Loss.” <span class="venue">IEEE MPCON</span>, 2026.<span class="badge">IEEE Xplore</span></div></div>
+        <div class="pub"><span class="tag">C2</span><div>K. Mishra, <b>A. A. Khan</b>, N. Arya. “Web3's Paradigm Shift: Blockchain's Role in Decentralized Connectivity.” <span class="venue">IEEE WCONF</span>, 2025.<span class="badge">IEEE Xplore</span></div></div>
+      </div>
 
-            updateGauges(voltage, current);
-        }
+      <div class="pubgroup">
+        <span class="eyebrow">Conference manuscripts — under review</span>
+        <div class="pub"><span class="tag">C3</span><div><b>A. A. Khan</b>, D. Bisen, N. Venu, P. Garg. “Federated Learning for Privacy-Preserving DDoS Detection in 5G Open Radio Access Networks.” 2026.</div></div>
+        <div class="pub"><span class="tag">C4</span><div><b>A. A. Khan</b>, S. Kumar. “Trustworthy Chronic Kidney Disease Prediction Using Leakage-Free Machine Learning and Explainable AI.” 2026.</div></div>
+        <div class="pub"><span class="tag">C5</span><div><b>A. A. Khan</b>, K. P. Sengar. “RegimeGate: A Lightweight Adaptive Controller for Heterogeneous Forecasters.” 2026.</div></div>
+        <div class="pub"><span class="tag">C6</span><div><b>A. A. Khan</b>, J. Sharma, K. P. Sengar. “MASA-Net v2: Multi-scale Attention Self-Augmentation Network for Pneumonia Detection on PneumoniaMNIST.” 2026.</div></div>
+        <div class="pub"><span class="tag">C7</span><div>J. Sharma, <b>A. A. Khan</b>, K. P. Sengar. “GB-META: Gradient-Boosting Meta-Ensemble for IoT/IIoT Intrusion Detection on Edge-IIoTset.” 2026.</div></div>
+      </div>
+    </section>
 
-        syncInputs(voltageInput, voltageSlider);
-        syncInputs(resistanceInput, resistanceSlider);
+    <!-- AWARDS -->
+    <section id="awards">
+      <h2>Honours &amp; service</h2>
+      <ul class="plain">
+        <li><span class="year">2026</span><b>Winner</b>, International Indo-Swiss Research Hackathon — ETH Zürich &amp; University of Lausanne, on AI-driven sustainable supply chains.</li>
+        <li><span class="year">2026</span>Two Chancellor's Awards and two Meritocracy Awards, MITS-DU, for institutional technology platforms.</li>
+        <li><span class="year">2026</span><b>Founding Chair</b>, IEEE Computer Society Student Branch Chapter, MITS-DU.</li>
+        <li><span class="year">2025</span>Mentor, GirlScript Summer of Code — 100+ contributors. Hacktoberfest Super Contributor.</li>
+        <li><span class="year">2024–26</span>Five hackathon wins at national and international level, including Google DevSprint.</li>
+      </ul>
+      <p class="sub" style="margin-top:1.1rem">B.Tech, Information Technology (IoT), Madhav Institute of Technology &amp; Science (Deemed University), Gwalior — CGPA 8.6/10, graduating May 2027.</p>
+    </section>
 
-        addValueBtn.addEventListener('click', addValueToTable);
-        plotGraphBtn.addEventListener('click', updateGraph);
+    <!-- CONTACT -->
+    <section id="contact">
+      <h2>Contact</h2>
+      <p class="sub">I am looking for a PhD or research master's beginning in autumn 2027, in trustworthy machine learning — calibration and uncertainty, distribution shift, or efficient and privacy-preserving models. Almost all of my work so far has been done alone, on public datasets and borrowed GPUs. What I am looking for is collaborators, and a supervisor to push the work past what I can see on my own.</p>
+      <div class="contact-grid">
+        <a href="mailto:ayan.ahmedkhan591@gmail.com">ayan.ahmedkhan591@gmail.com</a>
+        <a href="https://github.com/AyanAhmedKhan" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.linkedin.com/in/ayan-ahmed-khan" target="_blank" rel="noopener">LinkedIn</a>
+      </div>
+      <footer>Full CV available on request. IEEE Student Member · IEEE Computer Society.</footer>
+    </section>
 
-        createTicks(voltageTicks, 30);
-        createTicks(currentTicks, 30);
+  </div><!-- /#view-home -->
 
-        updateReadOnlyFields();
-    </script>
+  <div id="view-detail" class="detail" hidden></div>
+
+  </main>
+</div>
+
+<script>
+/* ============================================================
+   THEME
+   System preference is the default. The toggle writes data-theme,
+   which overrides the media query in both directions, and the choice
+   is remembered. Storage can be unavailable in a sandboxed frame,
+   so every access is guarded.
+   ============================================================ */
+(function () {
+  var KEY = 'aak-theme';
+  var root = document.documentElement;
+
+  function store(v) { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch (e) {} }
+  function read() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+
+  var saved = read();
+  if (saved === 'dark' || saved === 'light') root.setAttribute('data-theme', saved);
+
+  function current() {
+    var attr = root.getAttribute('data-theme');
+    if (attr) return attr;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+
+  var btn = document.getElementById('theme');
+  function label() {
+    var next = current() === 'dark' ? 'light' : 'dark';
+    btn.setAttribute('aria-label', 'Switch to ' + next + ' theme');
+    btn.setAttribute('title', 'Switch to ' + next + ' theme');
+  }
+  label();
+
+  btn.addEventListener('click', function () {
+    var next = current() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    store(next);
+    label();
+    window.dispatchEvent(new CustomEvent('themechange'));
+  });
+
+  // follow the OS while the user hasn't expressed a preference
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () {
+    if (!read()) { root.removeAttribute('data-theme'); label(); window.dispatchEvent(new CustomEvent('themechange')); }
+  });
+})();
+
+/* ============================================================
+   READING PROGRESS + ACTIVE SECTION
+   ============================================================ */
+(function () {
+  var bar = document.getElementById('progress');
+  var links = [].slice.call(document.querySelectorAll('nav.toc a'));
+  var sections = links
+    .map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); })
+    .filter(Boolean);
+  var ticking = false;
+
+  // document.body is the scroller in quirks mode, documentElement in standards
+  // mode; scrollingElement resolves both. Height likewise.
+  function scrollTop() {
+    return window.scrollY !== undefined ? window.scrollY
+      : (document.scrollingElement || document.documentElement).scrollTop;
+  }
+  function docHeight() {
+    var el = document.scrollingElement || document.documentElement;
+    return Math.max(el.scrollHeight, document.body ? document.body.scrollHeight : 0);
+  }
+
+  function update() {
+    ticking = false;
+    var y = scrollTop();
+    var max = docHeight() - window.innerHeight;
+    bar.style.width = (max > 8 ? Math.min(100, Math.max(0, (y / max) * 100)) : 0) + '%';
+
+    // active = last section whose top has passed a third of the viewport.
+    // Rect-based so it stays correct regardless of offsetParent.
+    var mark = window.innerHeight * 0.33, active = -1;
+    for (var i = 0; i < sections.length; i++) {
+      if (sections[i].getBoundingClientRect().top <= mark) active = i;
+    }
+    links.forEach(function (a, i) { a.classList.toggle('active', i === active); });
+  }
+
+  function onScroll() {
+    if (!ticking) { ticking = true; requestAnimationFrame(update); }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  update();
+  window.addEventListener('hashchange', function () { setTimeout(update, 60); });
+})();
+
+/* ============================================================
+   PROJECT PAGES
+   Hash routing (#/p/<slug>) so every project has its own shareable,
+   bookmarkable URL and the browser back button works, without needing
+   a server to rewrite paths.
+   ============================================================ */
+(function () {
+  var P = {
+    ckd: {
+      title: 'Leakage-free external validation for chronic kidney disease prediction',
+      domain: 'Clinical tabular',
+      meta: 'First author &middot; with D. Bisen, S. Nirkhi, S. Patil &middot; 2025–2026',
+      status: ['Under review — <i>Discover Artificial Intelligence</i> (Springer)', 'live'],
+      lede: 'The chronic-kidney-disease literature routinely reports near-perfect accuracy on one small benchmark. I asked whether that number survives contact with real patients. It does not.',
+      body: [
+        ['The question', '<p>A large body of work reports 99–100&nbsp;% classification on the UCI CKD dataset. Two quiet habits make those numbers hard to trust: <b>data leakage</b>, where imputation, scaling and synthetic oversampling are fitted on the whole dataset before cross-validation splits it, and the near-universal practice of <b>never testing on anything but that one small, easily separable benchmark</b>. This paper asks a simple question — does benchmark perfection mean a model would work on real patients? — and answers it empirically.</p>'],
+        ['Method', '<p>I built a strictly leakage-free pipeline in which MICE imputation, Min–Max scaling and SMOTE are fitted <i>inside</i> each cross-validation fold, and every reported metric is computed exclusively on real, non-synthetic patients. Fourteen learners — thirteen base classifiers and a stacking ensemble — were benchmarked on identical 10-fold stratified splits.</p><p>External validation used <b>18,711 NHANES participants</b> labelled with the race-free CKD-EPI 2021 equation and an albumin-to-creatinine ratio threshold, plus a third, harder synthetic set. Shift was measured rather than assumed, using per-feature Population Stability Index and a classifier two-sample test.</p>'],
+        ['Results', 'STATS'],
+        ['What it means', '<p>The collapse is not mis-tuning: a model trained natively on NHANES still reaches only 0.79 AUC, so the target task is genuinely harder. More striking is that the <b>penalty for leakage grows with task difficulty</b> — near zero on UCI, up to 0.88 ΔMCC on the hardest set. Leakage is therefore invisible on precisely the benchmark the field uses to detect it.</p><p>Recalibrating to a realistic ~16&nbsp;% prevalence drops apparent positive predictive value from 100&nbsp;% to about 24&nbsp;% while negative predictive value holds near 0.92. That reframes the tool: a rule-<i>out</i> screening aid, not a rule-<i>in</i> diagnostic. Conformal abstention rises from 14&nbsp;% to 44&nbsp;% out of domain, which is the model correctly reporting that it is out of its depth.</p>'],
+        ['Reported negative results', '<p>TabPFN&nbsp;v2 matches tuned Extra Trees without any tuning but does not beat it. Generative augmentation — SMOTE, CTGAN and TVAE — never beats no augmentation at all on real data; the deep generators actively hurt. Both are reported because they are useful to know and because omitting them would be the same selective reporting the paper criticises.</p>']
+      ],
+      stats: [
+        ['1.00 → 0.22', 'MCC, UCI benchmark → NHANES external validation'],
+        ['0.72', 'AUC out of distribution, from 1.00 in-domain'],
+        ['18,711', 'NHANES participants in the external cohort'],
+        ['PSI 5.31', 'Population Stability Index for blood urea'],
+        ['0.99', 'classifier two-sample AUC (0.5 = identical)'],
+        ['100 % → 24 %', 'PPV once recalibrated to real prevalence'],
+        ['14 % → 44 %', 'conformal abstention rate under shift'],
+        ['6 of 78', 'pairwise contrasts surviving Holm correction']
+      ],
+      practices: [
+        '<b>Refit every preprocessing step inside each fold.</b> Imputation, scaling and oversampling fitted on the full dataset leak validation information into training and inflate the score.',
+        '<b>Score only on real samples.</b> Metrics computed partly on SMOTE-generated points measure the interpolator, not the classifier.',
+        '<b>Validate on a genuinely different population.</b> A held-out split of the same small dataset is not external validation.',
+        '<b>Measure distribution shift, do not assume transfer.</b> Population Stability Index and a classifier two-sample test turn "these datasets differ" into a number.',
+        '<b>Recalibrate predictive values to deployment prevalence.</b> PPV computed at an enriched benchmark prevalence is not the PPV a clinic would see.',
+        '<b>Correct for multiple comparisons before claiming a winner.</b> Friedman, then Nemenyi, then Holm — most apparent differences do not survive.',
+        '<b>Give the model a way to say "I don\'t know."</b> Split-conformal selective prediction converts silent failure into visible abstention.',
+        '<b>Publish the negative results.</b> Methods that did not work are evidence, not embarrassment.'
+      ]
+    },
+
+    osr: {
+      title: 'Discrimination is not reliability — a multi-axis benchmark for open-set recognition',
+      domain: 'Medical imaging',
+      meta: 'Sole author &middot; 2025–2026',
+      status: ['Under review — <i>Int. J. of Machine Learning and Cybernetics</i>', 'live'],
+      lede: 'Open-set methods are almost always compared on detection AUROC alone. Rank them on four other axes that matter for deployment and the leaderboard inverts.',
+      body: [
+        ['The question', '<p>A classifier in a clinical workflow must abstain on inputs from classes it never saw in training, rather than assign a confident but meaningless label. Open-set recognition targets exactly this. But methods are compared on detection discrimination alone — which silently assumes that the best detector is also the best-calibrated, the most robust and the most affordable. I tested that assumption.</p>'],
+        ['Method', '<p>Twelve post-hoc scoring rules — MSP, Energy, Mahalanobis, KNN, OpenMax, ViM, ReAct, UCDSC-U and a learned Sentinel-MLP among them — across five MedMNIST tasks (pathology, dermatoscopy, blood smears, tissue, retinal OCT) over five seeds, on a contrastively fine-tuned MobileNetV3-Large backbone with ResNet-50 as a capacity ablation.</p><p>Each method was scored on five axes rather than one: detection (AUROC, FPR95, AUPR, OSCR), closed-set accuracy, calibration, corruption robustness, and computational cost.</p>'],
+        ['Results', 'STATS'],
+        ['The dissociation', '<p>The central finding is that <b>detection ranking is negatively correlated with robustness under shift</b> (Spearman ρ ≈ −0.61, and −0.60 when the backbone is swapped for ResNet-50). Choosing a method by the metric the field reports actively selects against the property a hospital needs. The Friedman test is highly significant, but the Nemenyi critical difference leaves the leading methods statistically indistinguishable — so the leaderboard everyone cites is not separating them at all.</p><p>The sharpest failure appears in a far-OOD cross-modality test: show a blood-smear model retinal OCT and <b>every confidence-based score falls below chance</b>, because the classifier is more confident on the foreign modality than on its own data. Feature-geometry scores survive; confidence-based ones invert.</p>'],
+        ['Contribution', '<p>I propose <b>Grad-Entropy-CAM</b>, a gradient attribution of predictive <i>entropy</i> rather than of a class logit. Where a standard saliency map explains why a class was chosen, this explains why the input should be <i>rejected</i> — a spatial rationale for abstention. Faithfulness is validated with deletion and insertion curves rather than by visual inspection.</p>']
+      ],
+      stats: [
+        ['ρ ≈ −0.61', 'detection rank vs robustness under shift'],
+        ['ρ = −0.60', 'same dissociation on a ResNet-50 backbone'],
+        ['16–19 %', 'AUROC on far-OOD cross-modality — below chance'],
+        ['χ² = 77.74', 'Friedman, p = 1.4 × 10⁻¹²'],
+        ['CD = 3.376', 'Nemenyi — leading methods statistically tied'],
+        ['12 × 5 × 5', 'scoring rules × tasks × seeds']
+      ],
+      practices: [
+        '<b>Evaluate along every axis that deployment depends on.</b> Detection, calibration, robustness, cost and explainability are mutually dissociated; optimising one silently costs another.',
+        '<b>Run multiple seeds and report statistical ties.</b> A single-number leaderboard implies a separation that a Nemenyi critical difference often shows does not exist.',
+        '<b>Swap the backbone before generalising.</b> If a conclusion only holds at one capacity it is a property of the network, not of the method.',
+        '<b>Stress-test with the failure the deployment actually guarantees.</b> Far-OOD cross-modality input is not an exotic edge case in a hospital; it is Tuesday.',
+        '<b>Validate explanations quantitatively.</b> Deletion and insertion curves test faithfulness; a heatmap that looks plausible proves nothing.',
+        '<b>Report your own method losing.</b> The learned Sentinel-MLP is beaten by none with significance — stated plainly rather than framed as a win.'
+      ]
+    },
+
+    tokenization: {
+      title: 'Tokenization-induced miscalibration in multilingual LLMs',
+      domain: 'Multilingual NLP',
+      meta: 'Sole author &middot; 2026 &middot; targeting MRL at EMNLP 2026',
+      status: ['In progress — measurement phase complete', 'live'],
+      lede: 'Over-fragmented languages are known to lose accuracy. I am testing whether they also lose <i>calibration</i> — becoming confidently wrong exactly where the tokenizer shreds the input.',
+      body: [
+        ['The question', '<p>Two well-funded literatures have never been connected. Tokenization-fairness work shows that subword tokenizers trained mostly on high-resource languages over-fragment morphologically rich ones, and stops at accuracy. Calibration work shows that model confidence is frequently misaligned with correctness, and treats language as a flat test condition.</p><p>Nobody has asked whether <b>fragmentation severity predicts calibration failure</b>, which matters more than it sounds: in deployment, a model that is overconfident in Malayalam is a worse failure than one that is merely less accurate in Malayalam, because overconfidence is what makes downstream systems trust bad output.</p>'],
+        ['Measurement phase — complete', '<p>Fertility, bytes per token and Rényi efficiency measured across six Dravidian and Indic languages on FLORES-200 parallel text, over seven tokenizers (mBERT, XLM-R, MuRIL, IndicBERTv2, Qwen2.5, Sarvam-1, and a gated Llama-3.1 that auto-skips). Parallel text means the fertility comparison is fair across languages.</p>'],
+        ['Results', 'STATS'],
+        ['Why the gradient matters', '<p>The measured spread is wide enough that the independent variable has real range, which was the gate condition for the whole study. It also produced a stronger design than planned: because the same language spans roughly 1.7 to 13 tokens per word <i>across tokenizers</i>, fragmentation can be tested on two independent axes — across languages within a tokenizer, and across tokenizers within a language.</p><p>One honest correction fell out of the data: my assumed severity ordering was wrong. Tamil tokenizes better than Telugu and Kannada everywhere, so measured fertility, not assumed resource level, is what feeds the analysis.</p>'],
+        ['The intervention', '<p>The proposed method is a <b>language-ID-free post-hoc recalibrator</b> conditioned on the input\'s own fragmentation statistics rather than on a language label. It is judged only on <b>leave-one-language-out transfer</b>: train the calibration on four languages, test on a fifth never seen. Global temperature scaling cannot adapt to a language it never saw; a fragmentation-conditioned model can, because it reads the input\'s own segmentation. If it wins in-distribution but not on transfer, the method has failed.</p>']
+      ],
+      stats: [
+        ['12.93', 'Qwen2.5 tokens per word, Malayalam'],
+        ['1.29', 'the same tokenizer on English — a ~10× tax'],
+        ['~2×', 'Indic-aware tokenizers (MuRIL, IndicBERTv2)'],
+        ['6.6×', 'within-language spread across tokenizers'],
+        ['6 / 7', 'languages / tokenizers measured on FLORES-200'],
+        ['97–99 %', 'Malayalam words Qwen2.5 splits into ≥2 pieces']
+      ],
+      practices: [
+        '<b>Treat the confound as the design problem.</b> Fragmentation and general low-resource-ness travel together; a study that cannot separate them has not answered the question it asked.',
+        '<b>Get statistical power from the unit of analysis.</b> Per-example fragmentation within one language gives thousands of datapoints; comparing six language means gives six.',
+        '<b>Use a natural experiment to isolate causation.</b> A fairer tokenizer on the same language is the only affordable lever that varies segmentation while holding morphology fixed.',
+        '<b>Control the confound at the independent variable, not just the outcome.</b> Longer sequences have more probability terms, so length must be partialled out of fragmentation itself or the recalibrator just relearns length normalisation.',
+        '<b>Pre-register the hypothesis but let the sign be free.</b> Fragmented tokens are rare, so the model may be appropriately <i>under</i>-confident; that result would be more surprising and equally publishable.',
+        '<b>Do not overclaim a mechanism as a new method.</b> Feature-conditioned temperature is an established family; the contribution is language-ID-free transfer, not the machinery.',
+        '<b>Gate the expensive work with a free check.</b> The whole design depends on a fragmentation gradient existing, which costs CPU-minutes to verify and would have invalidated months of GPU time.',
+        '<b>Release the benchmark as a first-class output.</b> A fragmentation-versus-calibration dataset stays citable even if the causal story gets scooped.'
+      ]
+    },
+
+    oran: {
+      title: 'Privacy-preserving federated learning for DDoS detection in 5G O-RAN',
+      domain: 'Network security',
+      meta: 'First author &middot; with D. Bisen, N. Venu, P. Garg &middot; 2026',
+      status: ['Submitted — IEEE conference', 'live'],
+      lede: 'A detector is only deployable if it fits where it has to run. This one was designed backwards from the memory and latency budget of a 5G radio controller.',
+      body: [
+        ['The constraint', '<p>Open Radio Access Network architecture exposes 5G to distributed denial-of-service attacks, but conventional intrusion detection does not fit its distributed shape — and operators cannot pool subscriber traffic centrally without creating exactly the privacy problem they are trying to avoid.</p><p>The real design constraint is not accuracy. It is that anything running as a Near-RT RIC xApp has to fit in constrained memory, be updateable over the O1 interface without touching E2, and converge inside a control loop budget of 10&nbsp;ms to 1&nbsp;s.</p>'],
+        ['Method', '<p><b>DDoSNet</b> is a 187&nbsp;KB, 47,875-parameter network sized to those limits. Features come from a dependency-free PCAP parser written against Python\'s <code>struct</code> module — 21 flow-level features over 5-second windows — so the pipeline reproduces on constrained hardware without a capture-library dependency chain.</p><p>Training ran across five federated agents on a real 5G testbed with GTP-decapsulated captures, comparing FedAvg against FedProx, centralized and local-only baselines, with a proximal-term ablation over μ ∈ {0, 0.001, 0.01, 0.1, 1.0} and convergence measured per round against the RIC latency budget.</p>'],
+        ['Results', 'STATS'],
+        ['Honest limitations', '<p>The reported accuracy is high because the task as captured is close to linearly separable — SYN and UDP flood ratios sit near 0.996 and 0.994 — and the attack classes are thin, with only a handful of attack windows per class against several hundred benign. "Privacy-preserving" here means data locality by architecture, not a formal differential-privacy guarantee. Both are stated in the paper rather than left for a reviewer to find, and formal DP on the parameter updates is the stated next step.</p>']
+      ],
+      stats: [
+        ['187 KB', 'model size, sized to Near-RT RIC xApp limits'],
+        ['47,875', 'parameters'],
+        ['10 ms – 1 s', 'RIC control-loop budget met'],
+        ['5', 'federated agents on a real 5G testbed'],
+        ['21', 'flow-level features, 5-second windows'],
+        ['μ = 0.01', 'FedProx setting matching centralized accuracy']
+      ],
+      practices: [
+        '<b>Design to the deployment envelope, not the leaderboard.</b> A detector that cannot fit inside the controller it must run on is undeployable regardless of its accuracy.',
+        '<b>Keep the data where it was captured.</b> Federated training makes privacy an architectural property rather than a policy promise.',
+        '<b>Ablate the hyperparameter rather than reporting the lucky one.</b> A proximal-term sweep shows the setting matters and how much.',
+        '<b>Remove dependencies from the data path.</b> A parser built on the standard library reproduces years later on hardware you do not control.',
+        '<b>State the limitation before a reviewer does.</b> Near-separable classes, thin attack samples and data-locality-not-DP are all named in the paper.'
+      ]
+    },
+
+    regimegate: {
+      title: 'RegimeGate — context-conditioned gating for robust demand forecasting',
+      domain: 'Demand forecasting',
+      meta: 'First author &middot; with K. P. Sengar &middot; 2026',
+      status: ['Winner — Indo-Swiss Research Hackathon, ETH Zürich &amp; Lausanne', 'done'],
+      lede: 'Gradient-boosted trees win on volatile, intermittent demand; deep networks win on smooth aggregated series. Rather than pick, condition the blend on which regime you are actually in.',
+      body: [
+        ['The question', '<p>Demand in real supply chains is non-stationary: calm seasonal stretches alternate with abrupt shocks from promotions, stock-outs, weather and chokepoint disruption. On the Walmart M5 benchmark no single model and no fixed blend is best across regimes. Practitioners combine forecasters with a static weighted average or, at best, a stacked meta-learner trained once on model outputs — both of which assume each model\'s relative competence never changes, which is exactly wrong for a shifting regime.</p>'],
+        ['Method', '<p>A sub-50k-parameter gating network (610 parameters on the benchmark instance) emits dynamic softmax fusion weights over two <i>frozen</i> experts, LightGBM and N-HiTS.</p><p>The design decision that matters: the gate is conditioned on an exogenous, leakage-safe <b>demand-regime context</b> — rolling volatility, Syntetos–Boylan intermittency (ADI, CV²), a shock z-score and calendar covariates — <b>rather than on the experts\' own predictions</b>. That is what places it provably beyond a stacked meta-learner, which can only see outputs and therefore cannot know why it is being asked.</p>'],
+        ['Results', 'STATS'],
+        ['Why small matters', '<p>Attention-based gates can learn powerful routing, but they are opaque and parameter-heavy. Keeping the gate under 50k parameters means its behaviour can be read directly with SHAP attributions — you can see which regime signal drove a given blend. A 114-parameter NumPy build runs the same gate client-side. Interpretability here is a design constraint, not a post-hoc add-on.</p>']
+      ],
+      stats: [
+        ['0.734', 'best overall WRMSSE (lower is better)'],
+        ['15.5 %', 'improvement over a stacked meta-learner'],
+        ['< 50k', 'gate parameters — 610 on the benchmark instance'],
+        ['114', 'parameters in the NumPy client-side build'],
+        ['2', 'frozen experts fused (LightGBM, N-HiTS)']
+      ],
+      practices: [
+        '<b>Condition on exogenous context, never on the experts\' predictions.</b> Reading model outputs makes it a stacked meta-learner; reading the regime makes it a controller.',
+        '<b>Build the leakage-safe protocol before the model.</b> Regime features computed with any forward-looking window would invalidate every number that follows.',
+        '<b>Keep the controller small enough to interpret.</b> A gate you can read with SHAP tells you why a blend shifted; an attention stack does not.',
+        '<b>Freeze the experts.</b> Fixing the base models isolates the gate\'s contribution instead of confounding it with expert retraining.',
+        '<b>Evaluate on the benchmark\'s own official metric.</b> Reporting WRMSSE keeps the result comparable to the public leaderboard rather than to a convenient substitute.'
+      ]
+    },
+
+    backdoor: {
+      title: 'Backdoor attack and defence in federated learning',
+      domain: 'Federated learning',
+      meta: 'Team lead &middot; IEEE Computer Society Global Student Challenge &middot; 2026',
+      status: ['In progress', 'live'],
+      lede: 'Building both sides of the same problem, because a defence you have not personally tried to break is a defence you do not understand.',
+      body: [
+        ['The setup', '<p>Federated learning\'s privacy property — the server never sees client data — is also its attack surface, since the server cannot inspect what it is aggregating. The challenge runs both tracks: craft a stealthy backdoor that survives aggregation, and build an aggregator that resists one.</p>'],
+        ['Attack', '<p>A distributed backdoor using DBA split-triggers, so no single client ever submits the full trigger pattern, combined with constrain-and-scale to keep malicious updates inside the norm distribution of benign ones, and Neurotoxin to place the backdoor in coordinates that benign training rarely touches, so it persists across rounds instead of being washed out.</p>'],
+        ['Defence', '<p>A robust aggregation routine combining FLAME-style cosine clustering, median-of-norms clipping, Multi-Krum selection and coordinate-wise median. The binding constraint is that it must hold <b>without knowing which aggregator the server runs</b> — FedAvg, Trimmed-Mean, Krum, Multi-Krum, Median or Bulyan — with up to a third of clients malicious.</p>'],
+        ['Operating envelope', 'STATS'],
+        ['Engineering notes', '<p>Two findings worth recording. Input normalisation to [−1,&nbsp;1] rather than [0,&nbsp;1] moved benign accuracy from 0.33 to 0.82, matching the grader\'s reported figure — a silent preprocessing mismatch that looked like a broken model. And the target class index was recovered by aligning benign predictions rather than hard-coding an assumption, which is the difference between a submission that works and one that scores zero for an invisible reason.</p>']
+      ],
+      stats: [
+        ['≤ 33 %', 'malicious client fraction the defence holds against'],
+        ['6', 'server aggregators it must survive, unknown in advance'],
+        ['0.33 → 0.82', 'benign accuracy after fixing input normalisation']
+      ],
+      practices: [
+        '<b>Build the attack and the defence together.</b> A defence evaluated only against the threats you imagined is a defence with unknown coverage.',
+        '<b>Assume the defender does not control the aggregator.</b> Robustness that depends on knowing the server\'s rule is not robustness in a federated setting.',
+        '<b>Score the trade-off, not one side of it.</b> Attack success rate and clean-accuracy retention have to be reported together or a defence can win by destroying the model.',
+        '<b>Use a realistic adversary fraction.</b> Defences that need a majority of honest clients say little about the regime that actually worries operators.',
+        '<b>Verify preprocessing against the evaluator.</b> A normalisation mismatch is indistinguishable from a broken model and costs more time than any algorithm bug.'
+      ]
+    }
+  };
+
+  var host = document.getElementById('view-detail');
+  var home = document.getElementById('view-home');
+  var BASE_TITLE = document.title;
+  var homeScroll = 0, showing = 'home';
+
+  function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+
+  function render(slug) {
+    var d = P[slug], h = '';
+    h += '<a class="back" href="#/">&larr; All work</a>';
+    h += '<p class="eyebrow">Research project</p>';
+    h += '<h1 tabindex="-1">' + d.title + '</h1>';
+    h += '<p class="detail-meta"><span class="domain">' + d.domain + '</span>' + d.meta +
+         '<span class="status ' + d.status[1] + '">' + d.status[0] + '</span></p>';
+    h += '<p class="lede">' + d.lede + '</p>';
+
+    d.body.forEach(function (sec) {
+      h += '<section><h2>' + sec[0] + '</h2>';
+      if (sec[1] === 'STATS') {
+        h += '<dl class="statgrid">';
+        d.stats.forEach(function (s) {
+          h += '<div><dt>' + s[0] + '</dt><dd>' + s[1] + '</dd></div>';
+        });
+        h += '</dl>';
+      } else {
+        h += sec[1];
+      }
+      h += '</section>';
+    });
+
+    h += '<section><h2>Best practices demonstrated</h2>';
+    h += '<p class="sub">The methodological commitments this project is built on — the part that transfers to the next problem.</p>';
+    h += '<ul class="practices">';
+    d.practices.forEach(function (pr) { h += '<li>' + pr + '</li>'; });
+    h += '</ul></section>';
+
+    // prev / next so a reader can walk the whole body of work
+    var order = Object.keys(P), at = order.indexOf(slug);
+    var prev = order[at - 1], next = order[at + 1];
+    h += '<nav class="projnav" aria-label="Other projects">';
+    h += prev
+      ? '<a href="#/p/' + prev + '"><span class="pn-k">&larr; Previous</span><span class="pn-t">' + P[prev].title + '</span></a>'
+      : '<a class="ph" aria-hidden="true" tabindex="-1"></a>';
+    h += next
+      ? '<a class="next" href="#/p/' + next + '"><span class="pn-k">Next &rarr;</span><span class="pn-t">' + P[next].title + '</span></a>'
+      : '<a class="ph next" aria-hidden="true" tabindex="-1"></a>';
+    h += '</nav>';
+
+    h += '<a class="back" href="#/">&larr; All work</a>';
+    host.innerHTML = h;
+    document.title = esc(d.title.replace(/<[^>]+>/g, '')) + ' — Ayan Ahmed Khan';
+  }
+
+  function route() {
+    var hash = location.hash || '';
+    var m = hash.match(/^#\/p\/([\w-]+)$/);
+
+    if (m && P[m[1]]) {
+      if (showing === 'home') homeScroll = window.scrollY;
+      render(m[1]);
+      home.hidden = true; host.hidden = false;
+      showing = 'detail';
+      window.scrollTo(0, 0);
+      var h1 = host.querySelector('h1');
+      if (h1) h1.focus({ preventScroll: true });
+      return;
+    }
+
+    // any non-project hash falls back to the index
+    var wasDetail = showing === 'detail';
+    host.hidden = true; home.hidden = false;
+    showing = 'home';
+    document.title = BASE_TITLE;
+
+    var id = hash.slice(1);
+    if (id && id !== '/' && document.getElementById(id)) {
+      document.getElementById(id).scrollIntoView();   // in-page section anchor
+    } else if (wasDetail) {
+      window.scrollTo(0, homeScroll);                 // return to where they clicked
+    }
+  }
+
+  window.addEventListener('hashchange', route);
+  route();
+})();
+
+(function () {
+  var cv = document.getElementById('rel');
+  if (!cv) return;
+  var ctx = cv.getContext('2d');
+  var W = cv.width, H = cv.height;
+  var pad = { l: 78, r: 26, t: 26, b: 62 };
+  var pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+
+  // observed reliability curve: confidence on x, accuracy on y, bowing below the diagonal
+  var pts = [[0,0],[.1,.075],[.2,.15],[.3,.225],[.4,.30],[.5,.365],[.6,.425],[.7,.48],[.8,.53],[.9,.575],[1,.615]];
+
+  function tok(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+  var X = function (v) { return pad.l + v * pw; };
+  var Y = function (v) { return pad.t + (1 - v) * ph; };
+
+  function draw(p) {
+    var ink = tok('--ink'), muted = tok('--muted'), rule = tok('--rule'),
+        amber = tok('--amber'), shade = tok('--shade');
+    ctx.clearRect(0, 0, W, H);
+    ctx.lineJoin = ctx.lineCap = 'round';
+
+    // grid
+    ctx.strokeStyle = rule; ctx.lineWidth = 1;
+    for (var g = 0; g <= 1.0001; g += .25) {
+      ctx.beginPath(); ctx.moveTo(X(0), Y(g)); ctx.lineTo(X(1), Y(g)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(X(g), Y(0)); ctx.lineTo(X(g), Y(1)); ctx.stroke();
+    }
+
+    // axis labels
+    ctx.fillStyle = muted;
+    ctx.font = '500 21px ui-monospace, Menlo, Consolas, monospace';
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for (var t = 0; t <= 1.0001; t += .25) ctx.fillText(t.toFixed(2), X(0) - 14, Y(t));
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for (var u = 0; u <= 1.0001; u += .25) ctx.fillText(u.toFixed(2), X(u), Y(0) + 14);
+
+    ctx.font = '600 20px system-ui, Segoe UI, Roboto, sans-serif';
+    ctx.fillText('CONFIDENCE', X(.5), H - 24);
+    ctx.save();
+    ctx.translate(20, Y(.5)); ctx.rotate(-Math.PI / 2);
+    ctx.textBaseline = 'top'; ctx.fillText('ACCURACY', 0, 0);
+    ctx.restore();
+
+    // shaded calibration gap (grows with p)
+    if (p > .04) {
+      ctx.fillStyle = shade;
+      ctx.beginPath(); ctx.moveTo(X(0), Y(0));
+      var i;
+      for (i = 0; i < pts.length; i++) {
+        if (pts[i][0] > p) break;
+        ctx.lineTo(X(pts[i][0]), Y(pts[i][1]));
+      }
+      for (var k = i - 1; k >= 0; k--) ctx.lineTo(X(pts[k][0]), Y(pts[k][0]));
+      ctx.closePath(); ctx.fill();
+    }
+
+    // perfect-calibration diagonal
+    ctx.strokeStyle = muted; ctx.lineWidth = 2.5; ctx.setLineDash([9, 9]);
+    ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(p), Y(p)); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // observed curve
+    ctx.strokeStyle = amber; ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    var started = false;
+    for (var j = 0; j < pts.length; j++) {
+      if (pts[j][0] > p) break;
+      var fx = X(pts[j][0]), fy = Y(pts[j][1]);
+      started ? ctx.lineTo(fx, fy) : (ctx.moveTo(fx, fy), started = true);
+    }
+    ctx.stroke();
+
+    // frame
+    ctx.strokeStyle = ink; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(X(0), Y(1)); ctx.lineTo(X(0), Y(0)); ctx.lineTo(X(1), Y(0)); ctx.stroke();
+  }
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) { draw(1); }
+  else {
+    var t0 = null, DUR = 1150;
+    requestAnimationFrame(function step(ts) {
+      if (t0 === null) t0 = ts;
+      var e = Math.min(1, (ts - t0) / DUR);
+      draw(1 - Math.pow(1 - e, 3));           // easeOutCubic
+      if (e < 1) requestAnimationFrame(step);
+    });
+    // rAF can be throttled to nothing (backgrounded tabs, battery saver, some
+    // embedded webviews). If the first frame hasn't fired shortly after load,
+    // paint the final state so the diagram is never blank.
+    setTimeout(function () { if (t0 === null) draw(1); }, 300);
+  }
+
+  // redraw on theme change (toggle stamps data-theme; OS pref may also flip)
+  new MutationObserver(function () { draw(1); })
+    .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  window.matchMedia('(prefers-color-scheme: dark)')
+    .addEventListener('change', function () { draw(1); });
+})();
+</script>
 </body>
-<footer class="footer">
-    <p>&copy; 2024 AYAR Lab | Designed by Ayan Ahmed Khan and Aryan Prajapati</p>
-    <div class="footer-links">
-        <a href="about.html">About</a>
-        <a href="#terms">Terms of Service</a>
-        <a href="#privacy">Privacy Policy</a>
-    </div>
-</footer>
-
 </html>

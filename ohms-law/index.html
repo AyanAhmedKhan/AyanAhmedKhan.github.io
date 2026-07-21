@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ohm's Law Virtual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+
+<body>
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Virtual Lab: Ohm's Law
+            </h2>
+            <p class="card-description">Explore the relationship between voltage, current, and resistance</p>
+            <div class="linkin">
+                <a href="aim.html" >Aim</a>
+                <a href="theory.html">Theory</a>
+                <a href="procedure.html">Procedure</a>
+                <a href="about.html">About</a>
+
+            </div>
+            
+        </div>
+        <div class="card-content">
+            <div class="input-group">
+                <div class="input-field">
+                    <label for="voltage">Voltage (V)</label>
+                    <input type="number" id="voltage" value="0" min="0" step="1">
+                    <input type="range" id="voltageSlider" value="0" min="0" max="30" step="1">
+                    <!-- <input type="text" id="voltageDisplay" value="0" readonly> -->
+                </div>
+                <div class="input-field">
+                    <label for="resistance">Resistance (Ω)</label>
+                    <input type="number" id="resistance" value="5" min="0" step="1">
+                    <input type="range" id="resistanceSlider" value="5" min="0" max="100" step="1">
+                </div>
+                <div class="input-field">
+                    <label for="current">Current (A)</label>
+                    <input type="number" id="currentDisplay" value="0" readonly>
+                </div>
+            </div>
+            <button id="addValueBtn">Add Value to Table</button>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Circuit Visualization</h2>
+        </div>
+        <div class="card-content">
+            <div>
+                <img src="imag.jpg" alt="Circuit Diagram" width="400px" height="300px">
+            </div>
+            <div class="gauge-container">
+                <svg viewBox="0 0 200 130" class="gauge">
+                    <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="#e1d8d8" stroke-width="20"
+                        stroke-linecap="round" />
+                    <path d="M20 100 A80 80 0 0 1 100 20" fill="none" stroke="#22c55e" stroke-width="20"
+                        stroke-linecap="round" />
+                    <path d="M100 20 A80 80 0 0 1 180 100" fill="none" stroke="#ef4444" stroke-width="20"
+                        stroke-linecap="round" />
+                    <g id="voltage-ticks"></g>
+                    <g class="needle" id="voltage-needle">
+                        <line x1="100" y1="100" x2="100" y2="30" stroke="black" stroke-width="2" />
+                        <circle cx="100" cy="100" r="5" fill="black" />
+                    </g>
+                </svg>
+                ( V ) <div class="value-display" id="voltage-value-display">0.0</div>
+                <!-- <div class="label">Volt</div> -->
+            </div>
+            <div class="resistanceInputDisplay">
+                R (Ω) <input type="number" id="resistanceDisplay" value="5" readonly style="width: 50px;">
+            </div>
+            <div class="current-gauge-container">
+                <svg viewBox="0 0 200 130" class="current-gauge">
+                    <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="#e1d8d8" stroke-width="20"
+                        stroke-linecap="round" />
+                    <path d="M20 100 A80 80 0 0 1 100 20" fill="none" stroke="#22c55e" stroke-width="20"
+                        stroke-linecap="round" />
+                    <path d="M100 20 A80 80 0 0 1 180 100" fill="none" stroke="#ef4444" stroke-width="20"
+                        stroke-linecap="round" />
+                    <g id="current-ticks"></g>
+                    <g class="needle" id="current-needle">
+                        <line x1="100" y1="100" x2="100" y2="30" stroke="black" stroke-width="2" />
+                        <circle cx="100" cy="100" r="5" fill="black" />
+                    </g>
+                </svg>
+                <span style="font-weight: 600;">(A)</span>
+                <div class="value-display" id="current-value-display">
+
+                </div>
+
+            </div>
+
+            <div class="volatgeInputDisplay">
+                V (DC) <input type="number" id="voltageDisplay" value="0" readonly style="width: 50px;">
+            </div>
+
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Results Table</h2>
+        </div>
+        <div class="card-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Voltage (V)</th>
+                        <th>Current (A)</th>
+                        <th>Resistance (Ω)</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTableBody"></tbody>
+            </table>
+            <button id="plotGraphBtn" disabled>Plot Graph</button>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Voltage vs Current Graph</h2>
+        </div>
+        <div class="card-content">
+            <canvas id="voltageCurrentChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const voltageInput = document.getElementById('voltage');
+        const resistanceInput = document.getElementById('resistance');
+        const voltageSlider = document.getElementById('voltageSlider');
+        const resistanceSlider = document.getElementById('resistanceSlider');
+        const voltageDisplay = document.getElementById('voltageDisplay');
+        const resistanceDisplay = document.getElementById('resistanceDisplay');
+        const currentDisplay = document.getElementById('currentDisplay');
+        const resultsTableBody = document.getElementById('resultsTableBody');
+        const voltageCurrentChart = document.getElementById('voltageCurrentChart');
+        const addValueBtn = document.getElementById('addValueBtn');
+        const plotGraphBtn = document.getElementById('plotGraphBtn');
+
+        const voltageNeedle = document.querySelector('#voltage-needle');
+        const voltageValueDisplay = document.querySelector('#voltage-value-display');
+        const voltageTicks = document.getElementById('voltage-ticks');
+
+        const currentNeedle = document.querySelector('#current-needle');
+        const currentValueDisplay = document.querySelector('#current-value-display');
+        const currentTicks = document.getElementById('current-ticks');
+
+        let chart;
+        let data = [];
+
+        function syncInputs(input, slider) {
+            input.addEventListener('input', () => {
+                slider.value = input.value;
+                updateReadOnlyFields();
+            });
+            slider.addEventListener('input', () => {
+                input.value = slider.value;
+                updateReadOnlyFields();
+            });
+        }
+
+        function addValueToTable() {
+            const voltage = parseFloat(voltageInput.value);
+            const resistance = parseFloat(resistanceInput.value);
+
+            if (isNaN(voltage) || isNaN(resistance) || resistance <= 0) {
+                alert('Please enter valid values for voltage and resistance.');
+                return;
+            }
+
+            const current = voltage / resistance;
+            const dataPoint = { voltage, current, resistance };
+            data.push(dataPoint);
+
+            const row = resultsTableBody.insertRow();
+            row.innerHTML = `
+                <td>${voltage.toFixed(2)}</td>
+                <td>${current.toFixed(2)}</td>
+                <td>${resistance.toFixed(2)}</td>
+                <td><button class="remove-btn">Remove</button></td>
+            `;
+
+            row.querySelector('.remove-btn').addEventListener('click', () => removeRow(row, dataPoint));
+
+            plotGraphBtn.disabled = false;
+            updateGraph();
+        }
+
+        function removeRow(row, dataPoint) {
+            const index = data.indexOf(dataPoint);
+            if (index > -1) {
+                data.splice(index, 1);
+            }
+            row.remove();
+            updateGraph();
+            if (data.length === 0) {
+                plotGraphBtn.disabled = true;
+            }
+        }
+
+        function updateGraph() {
+            if (chart) {
+                chart.destroy();
+            }
+
+            chart = new Chart(voltageCurrentChart, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Voltage vs Current',
+                        data: data.map(point => ({ x: point.voltage, y: point.current })),
+                        backgroundColor: 'rgb(75, 192, 192)',
+                        showLine: true,
+                        borderColor: 'rgb(75, 192, 192)',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'Voltage (V)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Current (A)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createTicks(ticksElement, maxValue) {
+            while (ticksElement.firstChild) {
+                ticksElement.removeChild(ticksElement.firstChild); // Clear any existing ticks
+            }
+
+            for (let i = 0; i <= maxValue; i += maxValue / 6) { // Adjusted for 6 intervals
+                const angle = (i / maxValue) * 180 - 180; // Map values to 180-degree arc
+                const radians = (angle * Math.PI) / 180;
+                const x1 = 100 + 70 * Math.cos(radians);
+                const y1 = 100 + 70 * Math.sin(radians);
+                const x2 = 100 + 80 * Math.cos(radians);
+                const y2 = 100 + 80 * Math.sin(radians);
+                const labelX = 100 + 90 * Math.cos(radians);
+                const labelY = 100 + 90 * Math.sin(radians);
+
+                const tick = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                tick.setAttribute("x1", x1);
+                tick.setAttribute("y1", y1);
+                tick.setAttribute("x2", x2);
+                tick.setAttribute("y2", y2);
+                tick.setAttribute("stroke", "black");
+                tick.setAttribute("stroke-width", "2");
+                ticksElement.appendChild(tick);
+
+                const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                label.setAttribute("x", labelX);
+                label.setAttribute("y", labelY);
+                label.setAttribute("text-anchor", "middle");
+                label.setAttribute("font-size", "10");
+                label.textContent = i.toFixed(0); // Rounded values for cleaner display
+                ticksElement.appendChild(label);
+            }
+        }
+
+
+
+        function updateGauges(voltage, current) {
+            updateGauge(voltageNeedle, voltageValueDisplay, voltage, 30);
+            updateGauge(currentNeedle, currentValueDisplay, current, 6);
+        }
+
+        function updateGauge(needle, display, value, maxValue) {
+            const angle = (value / maxValue) * 180 - 90; // -90 to 90 degrees
+            needle.style.transform = `rotate(${angle}deg)`;
+            display.textContent = value.toFixed(2);
+        }
+
+        function updateReadOnlyFields() {
+            const voltage = parseFloat(voltageInput.value) || 0;
+            const resistance = parseFloat(resistanceInput.value) || 1; // Default resistance to 1 to avoid division by 0
+            const current = voltage / resistance;
+
+            voltageDisplay.value = voltage.toFixed(2);
+            resistanceDisplay.value = resistance.toFixed(2);
+            currentDisplay.value = current.toFixed(2);
+
+            updateGauges(voltage, current);
+        }
+
+        syncInputs(voltageInput, voltageSlider);
+        syncInputs(resistanceInput, resistanceSlider);
+
+        addValueBtn.addEventListener('click', addValueToTable);
+        plotGraphBtn.addEventListener('click', updateGraph);
+
+        createTicks(voltageTicks, 30);
+        createTicks(currentTicks, 30);
+
+        updateReadOnlyFields();
+    </script>
+</body>
+<footer class="footer">
+    <p>&copy; 2024 AYAR Lab | Designed by Ayan Ahmed Khan and Aryan Prajapati</p>
+    <div class="footer-links">
+        <a href="about.html">About</a>
+        <a href="#terms">Terms of Service</a>
+        <a href="#privacy">Privacy Policy</a>
+    </div>
+</footer>
+
+</html>
